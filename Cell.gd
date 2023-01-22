@@ -6,7 +6,6 @@ export (state) var current_state = state.none
 
 var x: int
 var y: int
-var grid_size: int
 var nbrs: Array
 
 onready var sprite = $AnimatedSprite
@@ -15,10 +14,9 @@ onready var sprite = $AnimatedSprite
 func _ready():
 	pass # Replace with function body.
 
-func _init(x: int, y: int, grid_size: int):
+func _init(x: int, y: int):
 	self.x = x
 	self.y = y
-	self.grid_size = grid_size
 	self.nbrs = [
 		[self.x, self.y + 1],
 		[self.x + 1, self.y],
