@@ -12,15 +12,21 @@ _global_script_classes=[ {
 "base": "Area2D",
 "class": "Cell",
 "language": "GDScript",
-"path": "res://Cell.gd"
+"path": "res://Scripts/Cell.gd"
+}, {
+"base": "Node",
+"class": "Client",
+"language": "GDScript",
+"path": "res://Scripts/Client.gd"
 }, {
 "base": "Node2D",
 "class": "Unit",
 "language": "GDScript",
-"path": "res://Unit.gd"
+"path": "res://Scripts/Unit.gd"
 } ]
 _global_script_class_icons={
 "Cell": "",
+"Client": "",
 "Unit": ""
 }
 

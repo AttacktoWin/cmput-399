@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Scripts/State.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/Classes/Selector.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Scenes/Classes/Cell.tscn" type="PackedScene" id=3]
+
+[node name="State" type="Node"]
+script = ExtResource( 1 )
+
+[node name="Cell" parent="." instance=ExtResource( 3 )]
+
+[node name="Cell2" parent="." instance=ExtResource( 3 )]
+x = 1
+
+[node name="Cell3" parent="." instance=ExtResource( 3 )]
+x = 2
+
+[node name="Cell4" parent="." instance=ExtResource( 3 )]
+y = 1
+
+[node name="Cell5" parent="." instance=ExtResource( 3 )]
+x = 1
+y = 1
+
+[node name="Cell6" parent="." instance=ExtResource( 3 )]
+x = 2
+y = 1
+
+[node name="Cell7" parent="." instance=ExtResource( 3 )]
+y = 2
+
+[node name="Cell8" parent="." instance=ExtResource( 3 )]
+x = 1
+y = 2
+
+[node name="Cell9" parent="." instance=ExtResource( 3 )]
+x = 2
+y = 2
+
+[node name="Selector" parent="." instance=ExtResource( 2 )]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2( 100, 100 )
+current = true

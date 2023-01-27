@@ -6,8 +6,8 @@ signal unit_killed(unit_name)
 enum weapon_enum { rock = 0, paper = 1, scissors = 2}
 export (weapon_enum) var weapon setget _set_weapon
 
-enum alligence_enum { player, enemy }
-export (alligence_enum) var alligence
+enum allegiance_enum { player = 0, enemy = 1 }
+export (allegiance_enum) var allegiance
 
 var unit_name: String
 var hp: int
@@ -16,17 +16,34 @@ var y: int
 var move_range: int = 1
 var last: String = "ws"
 
+var coordinate_vector: Vector2 setget _coordinate_vector_changed
 
-func _init(unit_name: String, hp: int, x: int, y: int, weapon: int):
-	self.unit_name = unit_name
-	self.hp = hp
-	self.x = x 
-	self.y = y
-	self.weapon = weapon
+onready var sprite = $Sprite
+var texture: String
+onready var tween = $Tween
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	sprite.animation = texture
+
+static func make(unit_name: String, hp: int, x: int, y: int, weapon: int, allegiance: int) -> Unit:
+	var node = load("res://Scenes/Classes/Unit.tscn").instance()
+	
+	node.unit_name = unit_name
+	node.hp = hp
+	node.coordinate_vector = Vector2(x, y)
+	node.weapon = weapon
+	node.allegiance = allegiance_enum.get(allegiance, allegiance_enum.player)
+	return node
+
+func _coordinate_vector_changed(new_vector: Vector2):
+	coordinate_vector = new_vector
+	self.x = coordinate_vector.x
+	self.y = coordinate_vector.y
+	if (is_instance_valid(tween)):
+		tween.interpolate_property(self, "position", self.position, coordinate_vector * 100, 0.3)
+		tween.start()
+	else:
+		self.position = coordinate_vector * 100
 
 func distance(x: int, y: int) -> int:
 	return int(abs(self.x - x) + abs(self.y - y))
@@ -68,11 +85,11 @@ func move(direction: String) -> int:
 		if (self.x > 3):
 			self.x = 3
 			
-	if (self.alligence == 0 && self.x == 0 && self.y == 3):
+	if (self.alligance == 0 && self.x == 0 && self.y == 3):
 		self.hp = 0
 		emit_signal("unit_killed", self.unit_name)
 		return 1
-	elif (self.alligence == 1 && self.x == 3 && self.y == 0):
+	elif (self.alligance == 1 && self.x == 3 && self.y == 0):
 		self.hp = 0
 		emit_signal("unit_killed", self.unit_name)
 		return 1
@@ -94,8 +111,13 @@ func attack(u: Unit):
 		emit_signal("unit_killed", u.unit_name)
 		
 func _set_weapon(new_weapon):
-	assert(typeof(new_weapon) == typeof(weapon_enum))
-	# TODO: assign the unit's sprite the correct texture
+	match new_weapon:
+		weapon_enum.rock:
+			self.texture = "rock"
+		weapon_enum.paper:
+			self.texture = "paper"
+		weapon_enum.scissors:
+			self.texture = "scissors"
 	weapon = new_weapon
 		
 func _on_unit_killed(unit_name: String):
