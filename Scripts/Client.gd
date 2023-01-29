@@ -2,9 +2,8 @@ class_name Client
 extends Node
 
 signal packet_data(enemy_unit, player_unit)
-signal client_closed
 
-export var websocket_url := "localhost"
+export var websocket_url := "ws://127.0.0.1:5015"
 
 var _client = WebSocketClient.new()
 
@@ -17,10 +16,14 @@ func _ready():
 	var err = _client.connect_to_url(websocket_url, ["lws-mirror-protocol"])
 	if err != OK:
 		print("unable to connect")
+		set_process(false)
+
+func _process(delta):
+	_client.poll()
 
 func _socket_closed(was_clean = false):
 	print("Closed, clean: ", was_clean)
-	emit_signal("client_closed")
+	set_process(false)
 	
 func _socket_connected(proto = ""):
 	print("Connected with protocol: ", proto)

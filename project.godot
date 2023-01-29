@@ -33,6 +33,7 @@ _global_script_class_icons={
 [application]
 
 config/name="RPS Dungeons"
+run/main_scene="res://Scenes/State.tscn"
 config/icon="res://icon.png"
 
 [gui]

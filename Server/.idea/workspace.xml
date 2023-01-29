@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="cf7ee474-266e-43d7-9e34-828f25f87d32" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../Cell.gd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Cell.tscn" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Battle.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Battle.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BattleAll.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/BattleAll.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BattleAllStep2.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/BattleAllStep2.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Environment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Environment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Generator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Learning.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Playstyles.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Playstyles.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/QLearning.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/QLearning.py" afterDir="false" />
@@ -17,6 +21,7 @@
       <change beforePath="$PROJECT_DIR$/src/Testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Testing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Training.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/Training.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Unit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/Unit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/adapter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/attack.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/attack.pkl" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/attackAnti.csv" beforeDir="false" />
@@ -198,19 +203,26 @@
       <change beforePath="$PROJECT_DIR$/src/weaponAnti.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/weaponAnti.pkl" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/~$matchups.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Unit.gd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Unit.tscn" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../project.godot" beforeDir="false" afterPath="$PROJECT_DIR$/../project.godot" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2KvkelMn7O4XApCSZvHUYSS0Da2" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -219,7 +231,8 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/shash/Documents/CMPUT 399/Server"
+    "last_opened_file_path": "C:/Users/shash/Documents/CMPUT 399/Server",
+    "settings.editor.selected.configurable": "preferences.lookFeel"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />

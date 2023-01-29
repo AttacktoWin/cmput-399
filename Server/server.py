@@ -8,8 +8,10 @@ TCP_PORT = 5015
 BUFFER_SIZE = 20400
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(TCP_IP, TCP_PORT)
+s.bind((TCP_IP, TCP_PORT))
 s.listen(1)
+
+print("Listening on: " + s.getsockname()[0] + ":" + str(s.getsockname()[1]))
 
 conn, address = s.accept()
 
@@ -21,7 +23,11 @@ while 1:
             print("Data: " + str(data) + ", " + str(len(data)))
 
             # units|player_points|enemy_points|chosen_unit|direction
-            splits = data.split('|')
+            splits = str(data).split('|')
+            if len(splits) != 5:
+                conn, addr = s.accept()
+                continue
+
             units = splits[0].split(';')
             player_points = int(splits[1])
             enemy_points = int(splits[2])

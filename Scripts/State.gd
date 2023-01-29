@@ -17,7 +17,7 @@ var enemy_points := 0
 
 var possibilities := [] setget _set_possibilities
 
-var _client := Client.new()
+onready var _client := $Client
 
 enum phase_enum { select_unit, select_cell, movement, resolve }
 export(phase_enum) var current_phase = phase_enum.select_unit
