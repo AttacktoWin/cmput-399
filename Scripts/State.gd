@@ -6,9 +6,7 @@ signal possibilities_changed(possibilities)
 
 const Unit = preload("res://Scripts/Unit.gd")
 
-var units := []
-var player_units := []
-var enemy_units := []
+onready var units_node = $Units
 
 var selected_unit: Unit setget _set_selected_unit
 
@@ -27,7 +25,7 @@ onready var selector = $Selector
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	if (len(self.units) == 0):
+	if (self.units_node.get_child_count() == 0):
 		_generate_potential_units()
 		
 	for child in self.get_children():
@@ -36,32 +34,36 @@ func _ready():
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 
 func _input(event):
-	if (event.is_action_pressed("ui_accept")):
+	if (event.is_action_pressed("accept")):
 		match self.current_phase:
 			phase_enum.select_unit:
-				for unit in self.player_units:
+				for unit in self.get_player_units():
 					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
 						self.selected_unit = unit
 						self.current_phase = phase_enum.select_cell
 						break
 			phase_enum.select_cell:
+				for unit in self.get_player_units():
+					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
+						# Don't allow the player to fight themselves
+						return
 				var direction = "w"
 				match self.selected_unit.coordinate_vector - self.selector.coordinate_vector:
-					Vector2(0, -1):
-						direction = "w"
-					Vector2(1, 0):
-						direction = "d"
 					Vector2(0, 1):
-						direction = "s"
+						direction = "w"
 					Vector2(-1, 0):
+						direction = "d"
+					Vector2(0, -1):
+						direction = "s"
+					Vector2(1, 0):
 						direction = "a"
 					_:
 						return
-				self._client._send_packet(self.units, self.player_points, self.enemy_points, self.units.find(selected_unit), direction)
+				self._client._send_packet(self.units_node.get_children(), self.player_points, self.enemy_points, self.units_node.get_children().find(selected_unit), direction)
 				self.current_phase = phase_enum.movement
 				self.selector.visible = false
 				self.selected_unit = null
-	if (event.is_action_pressed("ui_cancel")):
+	if (event.is_action_pressed("cancel")):
 		match self.current_phase:
 			phase_enum.select_cell:
 				self.selected_unit = null
@@ -75,46 +77,61 @@ func _set_selected_unit(new_unit: Unit):
 		emit_signal("unit_deselected")
 
 func _generate_potential_units():
-	self.player_units.append(Unit.make("Player Rock", 5, 2, 0, 0, 0))
-	self.player_units.append(Unit.make("Player Paper", 5, 0, 0, 1, 0))
-	self.player_units.append(Unit.make("Player Scissors", 5, 1, 0, 2, 0))
-	self.units.append_array(self.player_units)
-	self.enemy_units.append(Unit.make("Enemy Rock", 5, 2, 2, 0, 1))
-	self.enemy_units.append(Unit.make("Enemy Paper", 5, 0, 2, 1, 1))
-	self.enemy_units.append(Unit.make("Enemy Scissors", 5, 1, 2, 2, 1))
-	self.units.append_array(self.enemy_units)
-	for unit in self.units:
-		add_child(unit)
+	units_node.add_child(Unit.make("Player Rock", 5, 2, 0, 0, 0))
+	units_node.add_child(Unit.make("Player Paper", 5, 0, 0, 1, 0))
+	units_node.add_child(Unit.make("Player Scissors", 5, 1, 0, 2, 0))
+	units_node.add_child(Unit.make("Enemy Rock", 5, 2, 2, 0, 1))
+	units_node.add_child(Unit.make("Enemy Paper", 5, 0, 2, 1, 1))
+	units_node.add_child(Unit.make("Enemy Scissors", 5, 1, 2, 2, 1))
 	
 func _set_possibilities(new_possibilities: Array):
 	possibilities = new_possibilities
 	emit_signal("possibilities_changed", new_possibilities)
 
 func resolve_turn(chosen_unit: String, direction: String):
+	var units = self.units_node.get_children()
 	var chosen_index := -1
-	for i in range(len(self.units)):
-		if self.units[i].name == chosen_unit:
+	for i in range(len(units)):
+		if units[i].name == chosen_unit:
 			chosen_index = i
 			break
-	self._client._send_packet(self.units, self.player_points, self.enemy_points, chosen_index, direction)
+	self._client._send_packet(units, self.player_points, self.enemy_points, chosen_index, direction)
+	
+func get_player_units():
+	var players := []
+	for unit in units_node.get_children():
+		if (unit.allegiance == 0):
+			players.append(unit)
+	return players
+	
+func get_enemy_units():
+	var enemies := []
+	for unit in units_node.get_children():
+		if (unit.allegiance == 1):
+			enemies.append(unit)
+	return enemies
 	
 func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
-	var enemy: Unit
-	var player: Unit
-	for u in self.units:
-		if (u.name == enemy_unit[0]):
-			enemy = u as Unit
+	var units = self.units_node.get_children()
+	var enemy_index := -1
+	var player_index := -1
+	for u in range(len(units)):
+		if (player_index != -1 && enemy_index != -1):
 			break
-		if (u.name == player_unit[0]):
-			player = u as Unit
-			break
+		if (units[u].unit_name == enemy_unit[0]):
+			enemy_index = u
+		if (units[u].unit_name == player_unit[0]):
+			player_index = u
 	# TODO: play a cool animation
-	enemy.hp = int(enemy_unit[1])
-	enemy.x = int(enemy_unit[2])
-	enemy.y = int(enemy_unit[3])
-	player.hp = int(player_unit[1])
-	player.x = int(player_unit[2])
-	player.y = int(player_unit[3])
+	
+	units[enemy_index].hp = int(enemy_unit[1])
+	units[enemy_index].coordinate_vector.x = int(enemy_unit[2])
+	units[enemy_index].coordinate_vector.y = int(enemy_unit[3])
+	units[player_index].hp = int(player_unit[1])
+	units[player_index].coordinate_vector.x = int(player_unit[2])
+	units[player_index].coordinate_vector.y = int(player_unit[3])
+	self.current_phase = phase_enum.select_unit
+	self.selector.visible = true
 
 func _on_cell_hovered(x: int, y: int):
 	selector.coordinate_vector = Vector2(x, y)

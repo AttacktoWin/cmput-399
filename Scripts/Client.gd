@@ -3,7 +3,7 @@ extends Node
 
 signal packet_data(enemy_unit, player_unit)
 
-export var websocket_url := "ws://127.0.0.1:5015"
+export var websocket_url := "ws://localhost:5015"
 
 var _client = WebSocketClient.new()
 
@@ -13,7 +13,7 @@ func _ready():
 	_client.connect("connection_established", self, "_socket_connected")
 	_client.connect("data_received", self, "_on_data")
 	
-	var err = _client.connect_to_url(websocket_url, ["lws-mirror-protocol"])
+	var err = _client.connect_to_url(websocket_url)
 	if err != OK:
 		print("unable to connect")
 		set_process(false)
@@ -32,15 +32,15 @@ func _on_data():
 	var data = _client.get_peer(1).get_packet().get_string_from_utf8()
 	if (data.length() > 0):
 		var changed_units := data.split("|") as PoolStringArray
-		var enemy_unit = changed_units[0].split("/")
-		var player_unit = changed_units[1].split("/")
+		var player_unit = changed_units[0].split("/")
+		var enemy_unit = changed_units[1].split("/")
 		emit_signal("packet_data", enemy_unit, player_unit)
 
 func _send_packet(units: Array, player_points: int, enemy_points: int, chosen_unit: int, direction: String):
 	var board := ""
 	for i in range(len(units)):
-		board += "{name}/{hp}/{x}/{y}/{allegiance}".format({
-			"name": units[i].name,
+		board += "{name}/{hp}/{x}/{y}/{weapon}/{allegiance}".format({
+			"name": units[i].unit_name,
 			"hp": units[i].hp,
 			"x": units[i].x,
 			"y": units[i].y,

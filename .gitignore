@@ -1,3 +1,6 @@
+.idea
+.vscode
+
 # Godot 4+ specific ignores
 .godot/
 
@@ -5,6 +8,7 @@
 .import/
 export.cfg
 export_presets.cfg
+*.import
 
 # Imported translations (automatically generated from CSV files)
 *.translation
@@ -15,3 +19,4 @@ data_*/
 mono_crash.*.json
 
 Server/src
+Server/.idea/

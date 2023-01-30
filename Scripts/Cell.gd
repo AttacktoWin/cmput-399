@@ -42,7 +42,14 @@ func _state_changed(new_state):
 	current_state = new_state
 
 func _on_unit_selected(unit_x: int, unit_y: int):
+	var player_units := []
+	var state_node := get_parent()
+	if is_instance_valid(state_node):
+		player_units = state_node.get_player_units()
 	if ([unit_x, unit_y] in self.nbrs):
+		for unit in player_units:
+			if (unit.x == self.x && unit.y == self.y):
+				return
 		self.current_state = state.movement
 		
 func _on_unit_deselected():
@@ -53,9 +60,9 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 	if (cell_x != self.x && cell_y != self.y):
 		return
 	var enemies := []
-	var state := get_parent()
-	if is_instance_valid(state):
-		enemies = state.enemy_units
+	var state_node := get_parent()
+	if is_instance_valid(state_node):
+		enemies = state_node.get_enemy_units()
 	var possibilities := []
 	for enemy in enemies:
 		if ([enemy.x, enemy.y] in self.nbrs):
@@ -68,8 +75,8 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 			
 	if (len(possibilities) == 0):
 		possibilities.append("No battles.")
-	if is_instance_valid(state):
-		state.possibilities = possibilities
+	if is_instance_valid(state_node):
+		state_node.possibilities = possibilities
 		
 		
 func _on_mouse_entered():

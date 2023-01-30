@@ -46,3 +46,5 @@ y = 2
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2( 100, 100 )
 current = true
+
+[node name="Units" type="Node" parent="."]
