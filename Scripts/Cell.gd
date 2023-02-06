@@ -6,7 +6,7 @@ signal cell_hovered(x, y)
 enum state { default, threatened, movement }
 export (state) var current_state = state.default setget _state_changed
 
-enum directions { up = 0, right = 1, down = 2, left = 3 }
+enum directions { down = 0, left = 1, up = 2, right = 3 }
 
 export var x: int
 export var y: int
@@ -17,9 +17,9 @@ onready var sprite = $AnimatedSprite
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	self.nbrs = [
-		[self.x, self.y + 1],
-		[self.x + 1, self.y],
 		[self.x, self.y - 1],
+		[self.x + 1, self.y],
+		[self.x, self.y + 1],
 		[self.x - 1, self.y]
 	]
 	self.position.x = self.x * 100
@@ -57,26 +57,45 @@ func _on_unit_deselected():
 		self.current_state = state.default
 		
 func _on_cell_hovered(cell_x: int, cell_y: int):
-	if (cell_x != self.x && cell_y != self.y):
+	if (!(cell_x == self.x && cell_y == self.y) && !([cell_x, cell_y] in self.nbrs)):
+		if (self.current_state == state.threatened):
+			self.current_state = state.default
 		return
 	var enemies := []
 	var state_node := get_parent()
 	if is_instance_valid(state_node):
 		enemies = state_node.get_enemy_units()
-	var possibilities := []
-	for enemy in enemies:
-		if ([enemy.x, enemy.y] in self.nbrs):
-			self.current_state = state.threatened
-			possibilities.append("{i}. Battle if {name} moves {direction}".format({
-				"i": len(possibilities),
-				"name": enemy.unit_name,
-				"direction": str(directions.keys()[self.nbrs.find([enemy.x, enemy.y])])
-			}))
-			
-	if (len(possibilities) == 0):
-		possibilities.append("No battles.")
-	if is_instance_valid(state_node):
-		state_node.possibilities = possibilities
+		
+	if (cell_x == self.x && cell_y == self.y):
+		var possibilities := []
+		for enemy in enemies:
+			if (enemy.x == cell_x && enemy.y == cell_y):
+				self.current_state = state.threatened
+				possibilities.append("{i}. Battle if {name} does not move".format({
+					"i": len(possibilities) + 1,
+					"name": enemy.unit_name
+				}))
+				continue
+			if ([enemy.x, enemy.y] in self.nbrs):
+				self.current_state = state.threatened
+				possibilities.append("{i}. Battle if {name} moves {direction}".format({
+					"i": len(possibilities) + 1,
+					"name": enemy.unit_name,
+					"direction": str(directions.keys()[self.nbrs.find([enemy.x, enemy.y])])
+				}))
+				
+		if (len(possibilities) == 0):
+			possibilities.append("No battles.")
+		if is_instance_valid(state_node):
+			state_node.possibilities = possibilities
+	else:
+		for enemy in enemies:
+			if (enemy.x == cell_x && enemy.y == cell_y):
+				# enemy is neighbour
+				self.current_state = state.threatened
+				return
+				
+		self.current_state = state.default
 		
 		
 func _on_mouse_entered():

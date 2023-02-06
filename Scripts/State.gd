@@ -21,6 +21,7 @@ enum phase_enum { select_unit, select_cell, movement, resolve }
 export(phase_enum) var current_phase = phase_enum.select_unit
 
 onready var selector = $Selector
+onready var panel = $Panel
 
 
 # Called when the node enters the scene tree for the first time.
@@ -31,7 +32,9 @@ func _ready():
 	for child in self.get_children():
 		if child is Cell:
 			child.connect("cell_hovered", self, "_on_cell_hovered")
+			selector.connect("cell_hovered", child, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
+	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
 
 func _input(event):
 	if (event.is_action_pressed("accept")):
@@ -59,6 +62,7 @@ func _input(event):
 						direction = "a"
 					_:
 						return
+				print(direction)
 				self._client._send_packet(self.units_node.get_children(), self.player_points, self.enemy_points, self.units_node.get_children().find(selected_unit), direction)
 				self.current_phase = phase_enum.movement
 				self.selector.visible = false
@@ -92,7 +96,7 @@ func resolve_turn(chosen_unit: String, direction: String):
 	var units = self.units_node.get_children()
 	var chosen_index := -1
 	for i in range(len(units)):
-		if units[i].name == chosen_unit:
+		if units[i].unit_name == chosen_unit:
 			chosen_index = i
 			break
 	self._client._send_packet(units, self.player_points, self.enemy_points, chosen_index, direction)
@@ -130,6 +134,17 @@ func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
 	units[player_index].hp = int(player_unit[1])
 	units[player_index].coordinate_vector.x = int(player_unit[2])
 	units[player_index].coordinate_vector.y = int(player_unit[3])
+	
+	if (player_index > enemy_index):
+		if (units[player_index].hp <= 0):
+			units[player_index].queue_free()
+		if (units[enemy_index].hp <= 0):
+			units[enemy_index].queue_free()
+	else:
+		if (units[enemy_index].hp <= 0):
+			units[enemy_index].queue_free()
+		if (units[player_index].hp <= 0):
+			units[player_index].queue_free()
 	self.current_phase = phase_enum.select_unit
 	self.selector.visible = true
 

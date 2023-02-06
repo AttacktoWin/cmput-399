@@ -1,15 +1,22 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Scripts/State.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Classes/Selector.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Scenes/Classes/Cell.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Scripts/Client.gd" type="Script" id=4]
+[ext_resource path="res://Scenes/Classes/PossibilitiesPanel.tscn" type="PackedScene" id=5]
 
 [node name="State" type="Node"]
 script = ExtResource( 1 )
 
 [node name="Client" type="Node" parent="."]
 script = ExtResource( 4 )
+
+[node name="Panel" parent="." instance=ExtResource( 5 )]
+margin_left = -340.0
+margin_top = -74.0
+margin_right = -190.0
+margin_bottom = 76.0
 
 [node name="Cell" parent="." instance=ExtResource( 3 )]
 
