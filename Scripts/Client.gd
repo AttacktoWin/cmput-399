@@ -7,6 +7,7 @@ signal client_connected
 export var websocket_url := "ws://localhost:5015"
 
 var _client = WebSocketClient.new()
+var study_id := ""
 
 func _ready():
 	_client.connect("connection_closed", self, "_socket_closed")
@@ -51,7 +52,8 @@ func _send_packet(units: Array, player_points: int, enemy_points: int, chosen_un
 		})
 		if (i < len(units) - 1):
 			board += ";"
-	var packet := "{board}|{player_points}|{enemy_points}|{chosen_unit}|{direction}".format({ 
+	var packet := "{study_id}|{board}|{player_points}|{enemy_points}|{chosen_unit}|{direction}".format({ 
+		"study_id": self.study_id,
 		"board": board, 
 		"player_points": player_points,
 		"enemy_points": enemy_points,

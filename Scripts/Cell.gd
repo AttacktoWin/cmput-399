@@ -22,8 +22,8 @@ func _ready():
 		[self.x, self.y + 1],
 		[self.x - 1, self.y]
 	]
-	self.position.x = self.x * 100
-	self.position.y = self.y * 100
+	self.position.x = self.x * 100 + 400
+	self.position.y = self.y * 100 + 200
 	connect("mouse_entered", self, "_on_mouse_entered")
 	var state = get_parent()
 	if (is_instance_valid(state)):

@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 
 signal unit_selected(unit_x, unit_y)
 signal unit_deselected
@@ -17,11 +17,13 @@ var possibilities := [] setget _set_possibilities
 
 onready var _client := $Client
 
-enum phase_enum { connecting, select_unit, select_cell, movement, resolve }
-export(phase_enum) var current_phase = phase_enum.select_unit
+enum phase_enum { connecting, select_unit, select_cell, movement, resolve, win }
+export(phase_enum) var current_phase = phase_enum.connecting
 
 onready var selector = $Selector
+onready var selected_indicator = $SelectedIndicator
 onready var panel = $Panel
+onready var unit_panel = $UnitPanel
 
 
 # Called when the node enters the scene tree for the first time.
@@ -32,7 +34,10 @@ func _ready():
 	for child in self.get_children():
 		if child is Cell:
 			child.connect("cell_hovered", self, "_on_cell_hovered")
+			child.connect("cell_hovered", unit_panel, "_on_cell_hovered")
+			# Change cell hovered using keyboard controls
 			selector.connect("cell_hovered", child, "_on_cell_hovered")
+	selector.connect("cell_hovered", unit_panel, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 	self._client.connect("client_connected", self, "_on_client_connected")
 	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
@@ -44,6 +49,8 @@ func _input(event):
 				for unit in self.get_player_units():
 					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
 						self.selected_unit = unit
+						selected_indicator.rect_position = Vector2(100* unit.x - 32, 100 * unit.y - 96)
+						selected_indicator.visible = true
 						self.current_phase = phase_enum.select_cell
 						break
 			phase_enum.select_cell:
@@ -72,10 +79,16 @@ func _input(event):
 		match self.current_phase:
 			phase_enum.select_cell:
 				self.selected_unit = null
+				self.selected_indicator.visible = false
 				self.current_phase = phase_enum.select_unit
-				
+			
+			
+func _set_study_id(id: String):
+	self._client.study_id = id
+		
 func _on_client_connected():
 	self.current_phase = phase_enum.select_unit
+	$ConnectingText.queue_free()
 				
 func _set_selected_unit(new_unit: Unit):
 	selected_unit = new_unit
@@ -105,6 +118,9 @@ func resolve_turn(chosen_unit: String, direction: String):
 			break
 	self._client._send_packet(units, self.player_points, self.enemy_points, chosen_index, direction)
 	
+func get_units():
+	return units_node.get_children()
+
 func get_player_units():
 	var players := []
 	for unit in units_node.get_children():
