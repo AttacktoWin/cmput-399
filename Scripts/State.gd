@@ -17,7 +17,7 @@ var possibilities := [] setget _set_possibilities
 
 onready var _client := $Client
 
-enum phase_enum { select_unit, select_cell, movement, resolve }
+enum phase_enum { connecting, select_unit, select_cell, movement, resolve }
 export(phase_enum) var current_phase = phase_enum.select_unit
 
 onready var selector = $Selector
@@ -34,6 +34,7 @@ func _ready():
 			child.connect("cell_hovered", self, "_on_cell_hovered")
 			selector.connect("cell_hovered", child, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
+	self._client.connect("client_connected", self, "_on_client_connected")
 	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
 
 func _input(event):
@@ -72,6 +73,9 @@ func _input(event):
 			phase_enum.select_cell:
 				self.selected_unit = null
 				self.current_phase = phase_enum.select_unit
+				
+func _on_client_connected():
+	self.current_phase = phase_enum.select_unit
 				
 func _set_selected_unit(new_unit: Unit):
 	selected_unit = new_unit

@@ -55,3 +55,12 @@ position = Vector2( 100, 100 )
 current = true
 
 [node name="Units" type="Node" parent="."]
+
+[node name="ConnectingText" type="RichTextLabel" parent="."]
+margin_left = -411.0
+margin_right = 612.0
+margin_bottom = 18.0
+bbcode_enabled = true
+bbcode_text = "[center]Connecting to server...[/center]"
+text = "Connecting to server..."
+fit_content_height = true

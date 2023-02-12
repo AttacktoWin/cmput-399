@@ -2,6 +2,7 @@ class_name Client
 extends Node
 
 signal packet_data(enemy_unit, player_unit)
+signal client_connected
 
 export var websocket_url := "ws://localhost:5015"
 
@@ -27,6 +28,7 @@ func _socket_closed(was_clean = false):
 	
 func _socket_connected(proto = ""):
 	print("Connected with protocol: ", proto)
+	emit_signal("client_connected")
 
 func _on_data():
 	var data = _client.get_peer(1).get_packet().get_string_from_utf8()
