@@ -11,16 +11,15 @@ from src.Learning import select_action
 # from src.diffCheck import diffCheck
 from src.adapter import adapter
 
+QList = []
+for f in os.listdir('src/files'):
+    if f.endswith('.pkl'):
+        QList.append(pickle.load(open('src/files/%s' % f, 'rb')))
+
 
 class RPSWebSocket(WebSocket):
-    QList = []
     adapters = {}
 
-    def __init__(self):
-        super()
-        for f in os.listdir('src/files'):
-            if f.endswith('.pkl'):
-                self.QList.append(pickle.load(open('src/files/%s' % f, 'rb')))
     def handle(self):
         # id|board|player_points|enemy_points|chosen_unit|direction
         splits = self.data.decode().split('|')
@@ -28,8 +27,8 @@ class RPSWebSocket(WebSocket):
             return
 
         # TODO: Load this using diffCheck
-        Q = pickle.load(open('src/files/general1.pkl', 'rb'))
-        id = splits[0]
+        Q = QList[0]
+        study_id = splits[0]
         units = splits[1].split(';')
         player_points = int(splits[2])
         enemy_points = int(splits[3])
@@ -46,10 +45,10 @@ class RPSWebSocket(WebSocket):
         state = State(parsed)
         state.addPoint(0, player_points)
         state.addPoint(1, enemy_points)
-        if id not in self.adapters.keys():
-            self.adapters[id] = adapter()
-            # TODO: figure out what to do
-            self.adapters[id].addMove(state.hash(0), )
+        if study_id not in self.adapters.keys():
+            self.adapters[study_id] = adapter()
+        # TODO: figure out what to do
+        # self.adapters[id].addMove(state.hash(0), )
         if len(state.units) > chosen_unit:
             state.units[chosen_unit].move(direction)
 

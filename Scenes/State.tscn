@@ -95,12 +95,16 @@ margin_bottom = -32.0
 texture = SubResource( 1 )
 expand = true
 
-[node name="ConnectingText" type="ColorRect" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ConnectingText" type="ColorRect" parent="CanvasLayer"]
+light_mask = 3
 margin_right = 1028.0
 margin_bottom = 605.0
 color = Color( 0.121569, 0.121569, 0.121569, 1 )
 
-[node name="Text" type="RichTextLabel" parent="ConnectingText"]
+[node name="Text" type="RichTextLabel" parent="CanvasLayer/ConnectingText"]
+light_mask = 3
 anchor_top = 0.5
 anchor_bottom = 0.5
 margin_right = 1023.0

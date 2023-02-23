@@ -5,7 +5,7 @@ extends Node2D
 # var a = 2
 # var b = "text"
 
-onready var text_box = $TextBox
+onready var text_box = $CanvasLayer/TextBox
 
 
 # Called when the node enters the scene tree for the first time.

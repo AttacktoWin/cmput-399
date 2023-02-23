@@ -88,7 +88,7 @@ func _set_study_id(id: String):
 		
 func _on_client_connected():
 	self.current_phase = phase_enum.select_unit
-	$ConnectingText.queue_free()
+	$CanvasLayer.queue_free()
 				
 func _set_selected_unit(new_unit: Unit):
 	selected_unit = new_unit
