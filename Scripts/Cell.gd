@@ -59,12 +59,16 @@ func _on_unit_deselected():
 func _on_cell_hovered(cell_x: int, cell_y: int):
 	if (!(cell_x == self.x && cell_y == self.y) && !([cell_x, cell_y] in self.nbrs)):
 		if (self.current_state == state.threatened):
-			self.current_state = state.default
+			if (State.selected_unit != null && [State.selected_unit.x, State.selected_unit.y] in self.nbrs):
+				for unit in State.get_player_units():
+					if (unit.x == self.x && unit.y == self.y):
+						self.current_state = state.default
+						return
+				self.current_state = state.movement
+			else:
+				self.current_state = state.default
 		return
-	var enemies := []
-	var state_node := get_parent()
-	if is_instance_valid(state_node):
-		enemies = state_node.get_enemy_units()
+	var enemies = State.get_enemy_units()
 		
 	if (cell_x == self.x && cell_y == self.y):
 		var possibilities := []
@@ -86,17 +90,25 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 				
 		if (len(possibilities) == 0):
 			possibilities.append("No battles.")
-		if is_instance_valid(state_node):
-			state_node.possibilities = possibilities
+		State.possibilities = possibilities
 	else:
 		for enemy in enemies:
 			if (enemy.x == cell_x && enemy.y == cell_y):
 				# enemy is neighbour
 				self.current_state = state.threatened
 				return
-				
-		self.current_state = state.default
+			
+		if (State.selected_unit != null && [State.selected_unit.x, State.selected_unit.y] in self.nbrs):
+			for unit in State.get_player_units():
+				if (unit.x == self.x && unit.y == self.y):
+					self.current_state = state.default
+					return
+				self.current_state = state.movement
+		else:
+			self.current_state = state.default
 		
 		
 func _on_mouse_entered():
+	if (State.current_phase != State.phase_enum.select_unit && State.current_phase != State.phase_enum.select_cell):
+		return
 	emit_signal("cell_hovered", self.x, self.y)

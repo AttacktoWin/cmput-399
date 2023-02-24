@@ -58,15 +58,13 @@ theme = SubResource( 2 )
 text = "RPS Dungeons"
 fit_content_height = true
 
-[node name="TextBox" type="TextEdit" parent="CanvasLayer"]
+[node name="TextBox" type="LineEdit" parent="CanvasLayer"]
 margin_left = 373.0
 margin_top = 314.0
 margin_right = 657.0
 margin_bottom = 358.0
 theme = SubResource( 8 )
 context_menu_enabled = false
-drag_and_drop_selection_enabled = false
-caret_block_mode = true
 caret_blink = true
 
 [node name="Button" type="Button" parent="CanvasLayer"]

@@ -23,7 +23,8 @@ export(phase_enum) var current_phase = phase_enum.connecting
 onready var selector = $Selector
 onready var selected_indicator = $SelectedIndicator
 onready var panel = $Panel
-onready var unit_panel = $UnitPanel
+onready var primary_unit_panel = $UnitPanel
+onready var secondary_unit_panel = $UnitPanel2
 
 
 # Called when the node enters the scene tree for the first time.
@@ -34,23 +35,30 @@ func _ready():
 	for child in self.get_children():
 		if child is Cell:
 			child.connect("cell_hovered", self, "_on_cell_hovered")
-			child.connect("cell_hovered", unit_panel, "_on_cell_hovered")
+			child.connect("cell_hovered", primary_unit_panel, "_on_cell_hovered")
+			child.connect("cell_hovered", secondary_unit_panel, "_on_cell_hovered")
 			# Change cell hovered using keyboard controls
 			selector.connect("cell_hovered", child, "_on_cell_hovered")
-	selector.connect("cell_hovered", unit_panel, "_on_cell_hovered")
+	selector.connect("cell_hovered", primary_unit_panel, "_on_cell_hovered")
+	selector.connect("cell_hovered", secondary_unit_panel, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 	self._client.connect("client_connected", self, "_on_client_connected")
 	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
 
 func _input(event):
 	if (event.is_action_pressed("accept")):
+		if (_client.study_id == ""):
+			return
 		match self.current_phase:
 			phase_enum.select_unit:
 				for unit in self.get_player_units():
 					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
 						self.selected_unit = unit
-						selected_indicator.rect_position = Vector2(100* unit.x - 32, 100 * unit.y - 96)
+						selected_indicator.rect_position = Vector2(100 * unit.x, 100 * unit.y) + Vector2(378, 121)
 						selected_indicator.visible = true
+						$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position - Vector2(219, 0), 0.15)
+						$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position - Vector2(0, 118), 0.15)
+						$Tween.start()
 						self.current_phase = phase_enum.select_cell
 						break
 			phase_enum.select_cell:
@@ -80,6 +88,9 @@ func _input(event):
 			phase_enum.select_cell:
 				self.selected_unit = null
 				self.selected_indicator.visible = false
+				$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
+				$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
+				$Tween.start()
 				self.current_phase = phase_enum.select_unit
 			
 			
@@ -87,6 +98,7 @@ func _set_study_id(id: String):
 	self._client.study_id = id
 		
 func _on_client_connected():
+	selector.coordinate_vector = Vector2(0, 0)
 	self.current_phase = phase_enum.select_unit
 	$CanvasLayer.queue_free()
 				
@@ -108,15 +120,6 @@ func _generate_potential_units():
 func _set_possibilities(new_possibilities: Array):
 	possibilities = new_possibilities
 	emit_signal("possibilities_changed", new_possibilities)
-
-func resolve_turn(chosen_unit: String, direction: String):
-	var units = self.units_node.get_children()
-	var chosen_index := -1
-	for i in range(len(units)):
-		if units[i].unit_name == chosen_unit:
-			chosen_index = i
-			break
-	self._client._send_packet(units, self.player_points, self.enemy_points, chosen_index, direction)
 	
 func get_units():
 	return units_node.get_children()

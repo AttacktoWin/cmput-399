@@ -13,6 +13,7 @@ enum UnitEnum { none, rock, paper, scissors }
 export (UnitEnum) var displayed_unit setget _set_displayed_unit
 onready var unit_display = $UnitDisplay
 export(int, 1, 10) var max_health = 5
+export var primary := false
 
 var unit_name := "" setget _set_unit_name
 onready var unit_name_label = $VBoxContainer/UnitName
@@ -46,26 +47,30 @@ func _draw():
 	
 	draw_style_box(style_box, Rect2(POSITION, SIZE))
 	
+func _display_unit_info(unit: Unit):
+	match unit.weapon:
+		0:
+			self.displayed_unit = UnitEnum.rock
+		1:
+			self.displayed_unit = UnitEnum.paper
+		2:
+			self.displayed_unit = UnitEnum.scissors
+		_:
+			self.displayed_unit = UnitEnum.none
+	self.unit_name = unit.unit_name
+	self.unit_health = unit.hp
+	$VBoxContainer/HealthBarContainer.visible = true
+	$VBoxContainer/HealthCount.visible = true
+
 func _on_cell_hovered(cell_x: int, cell_y: int):
-	var state = get_node("/root/State")
-	var units := []
-	if (is_instance_valid(state)):
-		units = state.get_units()
+	if (primary && State.selected_unit != null):
+		_display_unit_info(State.selected_unit)
+		return
+	var units = State.get_units()
+	
 	for unit in units:
 		if (unit.x == cell_x && unit.y == cell_y):
-			match unit.weapon:
-				0:
-					self.displayed_unit = UnitEnum.rock
-				1:
-					self.displayed_unit = UnitEnum.paper
-				2:
-					self.displayed_unit = UnitEnum.scissors
-				_:
-					self.displayed_unit = UnitEnum.none
-			self.unit_name = unit.unit_name
-			self.unit_health = unit.hp
-			$VBoxContainer/HealthBarContainer.visible = true
-			$VBoxContainer/HealthCount.visible = true
+			_display_unit_info(unit)
 			return
 	self.displayed_unit = UnitEnum.none
 	self.unit_name = "Empty Cell"
