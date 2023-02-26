@@ -101,4 +101,4 @@ func _set_unit_health(new_health: int):
 		"health": unit_health,
 		"max_health": max_health
 	})
-	health_bar.anchor_right = float(unit_health) / max_health
+	$Tween.interpolate_property(health_bar, "anchor_right", health_bar.anchor_right, float(unit_health) / max_health, 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN)

@@ -90,3 +90,5 @@ bbcode_enabled = true
 bbcode_text = "[right]0/0[/right]"
 text = "0/0"
 fit_content_height = true
+
+[node name="Tween" type="Tween" parent="."]

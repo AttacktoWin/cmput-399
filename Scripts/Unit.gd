@@ -23,6 +23,8 @@ onready var tween = $Tween
 
 func _ready():
 	sprite.animation = texture
+	if (self.allegiance == allegiance_enum.enemy):
+		sprite.modulate = Color(1, 0.5, 0.5)
 
 static func make(unit_name: String, hp: int, x: int, y: int, weapon: int, allegiance: int) -> Unit:
 	var node = load("res://Scenes/Classes/Unit.tscn").instance()
@@ -54,7 +56,8 @@ func _set_weapon(new_weapon):
 			self.texture = "scissors"
 	weapon = new_weapon
 		
-func _on_unit_killed(unit_name: String):
-	if (self.unit_name == unit_name && self.hp <= 0):
-		# Change this to add in animations/indicators
-		self.queue_free()
+func kill_unit():
+	tween.interpolate_property(self, "modulate", self.modulate, Color(1, 0, 0), 0.2)
+	tween.interpolate_property(self, "modulate", Color(1, 0, 0), Color(0, 0, 0), 0.1, 0, Tween.EASE_OUT, 0.2)
+	tween.interpolate_callback(self, 0.3, "queue_free")
+	tween.start()

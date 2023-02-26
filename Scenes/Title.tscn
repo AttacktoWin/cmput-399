@@ -85,8 +85,4 @@ theme = SubResource( 6 )
 text = "Enter Study Id:"
 fit_content_height = true
 
-[node name="Camera2D" type="Camera2D" parent="."]
-anchor_mode = 0
-current = true
-
 [connection signal="pressed" from="CanvasLayer/Button" to="." method="_on_Button_pressed"]
