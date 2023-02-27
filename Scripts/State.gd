@@ -3,6 +3,7 @@ extends Node2D
 signal unit_selected(unit_x, unit_y)
 signal unit_deselected
 signal possibilities_changed(possibilities)
+signal shake_screen
 
 const Unit = preload("res://Scripts/Unit.gd")
 
@@ -17,13 +18,15 @@ var possibilities := [] setget _set_possibilities
 
 onready var _client := $Client
 
-enum phase_enum { connecting, select_unit, select_cell, movement, resolve, win }
+enum phase_enum { connecting, waiting, select_unit, select_cell, movement, resolve, win }
 export(phase_enum) var current_phase = phase_enum.connecting
 
 onready var selector = $Selector
 onready var selected_indicator = $SelectedIndicator
 onready var panel = $Panel
-onready var unit_panel = $UnitPanel
+onready var primary_unit_panel = $UnitPanel
+onready var secondary_unit_panel = $UnitPanel2
+onready var camera = $Camera2D
 
 
 # Called when the node enters the scene tree for the first time.
@@ -34,23 +37,31 @@ func _ready():
 	for child in self.get_children():
 		if child is Cell:
 			child.connect("cell_hovered", self, "_on_cell_hovered")
-			child.connect("cell_hovered", unit_panel, "_on_cell_hovered")
+			child.connect("cell_hovered", primary_unit_panel, "_on_cell_hovered")
+			child.connect("cell_hovered", secondary_unit_panel, "_on_cell_hovered")
 			# Change cell hovered using keyboard controls
 			selector.connect("cell_hovered", child, "_on_cell_hovered")
-	selector.connect("cell_hovered", unit_panel, "_on_cell_hovered")
+	selector.connect("cell_hovered", primary_unit_panel, "_on_cell_hovered")
+	selector.connect("cell_hovered", secondary_unit_panel, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 	self._client.connect("client_connected", self, "_on_client_connected")
 	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
+	connect("shake_screen", self.camera, "set_shake")
 
 func _input(event):
 	if (event.is_action_pressed("accept")):
+		if (_client.study_id == ""):
+			return
 		match self.current_phase:
 			phase_enum.select_unit:
 				for unit in self.get_player_units():
 					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
 						self.selected_unit = unit
-						selected_indicator.rect_position = Vector2(100* unit.x - 32, 100 * unit.y - 96)
+						selected_indicator.rect_position = Vector2(100 * unit.x, 100 * unit.y) + Vector2(378, 121)
 						selected_indicator.visible = true
+						$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position - Vector2(219, 0), 0.15)
+						$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position - Vector2(0, 118), 0.15)
+						$Tween.start()
 						self.current_phase = phase_enum.select_cell
 						break
 			phase_enum.select_cell:
@@ -74,21 +85,29 @@ func _input(event):
 				self._client._send_packet(self.units_node.get_children(), self.player_points, self.enemy_points, self.units_node.get_children().find(selected_unit), direction)
 				self.current_phase = phase_enum.movement
 				self.selector.visible = false
-				self.selected_unit = null
 	if (event.is_action_pressed("cancel")):
 		match self.current_phase:
 			phase_enum.select_cell:
 				self.selected_unit = null
 				self.selected_indicator.visible = false
+				$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
+				$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
+				$Tween.start()
 				self.current_phase = phase_enum.select_unit
 			
 			
 func _set_study_id(id: String):
 	self._client.study_id = id
+	if (self.current_phase == phase_enum.waiting):
+		self.current_phase = phase_enum.select_unit
 		
 func _on_client_connected():
-	self.current_phase = phase_enum.select_unit
-	$ConnectingText.queue_free()
+	selector.coordinate_vector = Vector2(0, 0)
+	if (self._client.study_id != ''):
+		self.current_phase = phase_enum.select_unit
+	else:
+		self.current_phase = phase_enum.waiting
+	$CanvasLayer.queue_free()
 				
 func _set_selected_unit(new_unit: Unit):
 	selected_unit = new_unit
@@ -108,15 +127,6 @@ func _generate_potential_units():
 func _set_possibilities(new_possibilities: Array):
 	possibilities = new_possibilities
 	emit_signal("possibilities_changed", new_possibilities)
-
-func resolve_turn(chosen_unit: String, direction: String):
-	var units = self.units_node.get_children()
-	var chosen_index := -1
-	for i in range(len(units)):
-		if units[i].unit_name == chosen_unit:
-			chosen_index = i
-			break
-	self._client._send_packet(units, self.player_points, self.enemy_points, chosen_index, direction)
 	
 func get_units():
 	return units_node.get_children()
@@ -146,7 +156,9 @@ func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
 			enemy_index = u
 		if (units[u].unit_name == player_unit[0]):
 			player_index = u
-	# TODO: play a cool animation
+	
+	if (units[enemy_index].hp > int(enemy_unit[2]) || units[player_index].hp > int(player_unit[2])):
+		emit_signal("shake_screen")
 	
 	units[enemy_index].hp = int(enemy_unit[1])
 	units[enemy_index].coordinate_vector.x = int(enemy_unit[2])
@@ -157,16 +169,40 @@ func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
 	
 	if (player_index > enemy_index):
 		if (units[player_index].hp <= 0):
-			units[player_index].queue_free()
+			units[player_index].kill_unit()
 		if (units[enemy_index].hp <= 0):
-			units[enemy_index].queue_free()
+			units[enemy_index].kill_unit()
 	else:
 		if (units[enemy_index].hp <= 0):
-			units[enemy_index].queue_free()
+			units[enemy_index].kill_unit()
 		if (units[player_index].hp <= 0):
-			units[player_index].queue_free()
+			units[player_index].kill_unit()
+	call_deferred("_check_win")
+
+func _check_win():
+	if (len(get_player_units()) == 0):
+		self.current_phase = phase_enum.win
+		return
+	if (len(get_enemy_units()) == 0):
+		self.current_phase = phase_enum.win
+		return
 	self.current_phase = phase_enum.select_unit
-	self.selector.visible = true
+	self.selected_unit = null
+	self.selected_indicator.visible = false
+	$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
+	$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
+	$Tween.start()
+
+func _reset_state():
+	_set_study_id("")
+	self.possibilities = []
+	for unit in units_node.get_children():
+		unit.queue_free()
+	call_deferred("_generate_potential_units")
+	self.current_phase = phase_enum.waiting
+	var title_screen = load("res://Scenes/Title.tscn")
+	var scene = title_screen.instance()
+	get_tree().add_child(scene)
 
 func _on_cell_hovered(x: int, y: int):
 	selector.coordinate_vector = Vector2(x, y)

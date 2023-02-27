@@ -13,17 +13,28 @@ func _ready():
 	_client.connect("connection_closed", self, "_socket_closed")
 	_client.connect("connection_error", self, "_socket_closed")
 	_client.connect("connection_established", self, "_socket_connected")
+	_client.connect("server_close_request", self, "_server_close_request")
 	_client.connect("data_received", self, "_on_data")
 	
+	print("Connecting to server...")
 	var err = _client.connect_to_url(websocket_url)
 	if err != OK:
 		print("unable to connect")
 		set_process(false)
 
 func _process(delta):
+	if (_client.get_connection_status() == WebSocketClient.CONNECTION_DISCONNECTED):
+		return
 	_client.poll()
 
-func _socket_closed(was_clean = false):
+func _exit_tree():
+	_client.disconnect_from_host()
+
+func _server_close_request(code = 1000, reason = ""):
+	print("Server closed ocnnection: " + String(code) + ", \"" + reason + "\"")
+	_socket_closed(true)
+
+func _socket_closed(was_clean = true):
 	print("Closed, clean: ", was_clean)
 	set_process(false)
 	

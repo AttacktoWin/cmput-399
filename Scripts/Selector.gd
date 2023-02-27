@@ -16,6 +16,8 @@ func _coordinate_vector_changed(new_vector: Vector2):
 	emit_signal("cell_hovered", new_vector.x, new_vector.y)
 		
 func _input(event):
+	if (State.current_phase != State.phase_enum.select_unit && State.current_phase != State.phase_enum.select_cell):
+		return
 	if (event.is_action_pressed("up")):
 		if (self.coordinate_vector.y != 0):
 			self.coordinate_vector = self.coordinate_vector + Vector2(0, -1)
