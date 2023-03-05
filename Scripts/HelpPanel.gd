@@ -10,11 +10,12 @@ func _ready():
 	text.connect("resized", self, "_on_Text_resized")
 
 
-func _on_possibilities_changed(possibilities: Array):
-	text.bbcode_text = "[b]Possibilites:[/b]\n" + "\n\n".join(possibilities)
+func _on_tooltips_changed(tooltips: Array):
+	text.bbcode_text = "[b]How to Play:[/b]\n" + "\n\n".join(tooltips)
 	
 func _on_Text_resized():
 	self.rect_size.y = text.rect_size.y
+	self.rect_size.x = 150
 
 func _draw():
 	var style_box = StyleBoxFlat.new()

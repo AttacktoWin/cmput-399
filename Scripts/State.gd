@@ -3,6 +3,7 @@ extends Node2D
 signal unit_selected(unit_x, unit_y)
 signal unit_deselected
 signal possibilities_changed(possibilities)
+signal tooltips_changed(tooltips)
 signal shake_screen
 
 const Unit = preload("res://Scripts/Unit.gd")
@@ -15,15 +16,17 @@ var player_points := 0
 var enemy_points := 0
 
 var possibilities := [] setget _set_possibilities
+var tooltips := [] setget _set_tooltips
 
 onready var _client := $Client
 
-enum phase_enum { connecting, waiting, select_unit, select_cell, movement, resolve, win }
-export(phase_enum) var current_phase = phase_enum.connecting
+enum phase_enum { connecting, waiting, select_unit, select_cell, movement, win }
+export(phase_enum) var current_phase = phase_enum.connecting setget _set_current_phase
 
 onready var selector = $Selector
 onready var selected_indicator = $SelectedIndicator
-onready var panel = $Panel
+onready var possibilities_panel = $PossibilitiesPanel
+onready var help_panel = $HelpPanel
 onready var primary_unit_panel = $UnitPanel
 onready var secondary_unit_panel = $UnitPanel2
 onready var camera = $Camera2D
@@ -31,6 +34,7 @@ onready var camera = $Camera2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	randomize()
 	if (self.units_node.get_child_count() == 0):
 		_generate_potential_units()
 		
@@ -45,7 +49,8 @@ func _ready():
 	selector.connect("cell_hovered", secondary_unit_panel, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 	self._client.connect("client_connected", self, "_on_client_connected")
-	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
+	connect("possibilities_changed", self.possibilities_panel, "_on_possibilities_changed")
+	connect("tooltips_changed", self.help_panel, "_on_tooltips_changed")
 	connect("shake_screen", self.camera, "set_shake")
 
 func _input(event):
@@ -57,11 +62,6 @@ func _input(event):
 				for unit in self.get_player_units():
 					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
 						self.selected_unit = unit
-						selected_indicator.rect_position = Vector2(100 * unit.x, 100 * unit.y) + Vector2(378, 121)
-						selected_indicator.visible = true
-						$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position - Vector2(219, 0), 0.15)
-						$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position - Vector2(0, 118), 0.15)
-						$Tween.start()
 						self.current_phase = phase_enum.select_cell
 						break
 			phase_enum.select_cell:
@@ -81,18 +81,11 @@ func _input(event):
 						direction = "a"
 					_:
 						return
-				print(direction)
 				self._client._send_packet(self.units_node.get_children(), self.player_points, self.enemy_points, self.units_node.get_children().find(selected_unit), direction)
 				self.current_phase = phase_enum.movement
-				self.selector.visible = false
 	if (event.is_action_pressed("cancel")):
 		match self.current_phase:
 			phase_enum.select_cell:
-				self.selected_unit = null
-				self.selected_indicator.visible = false
-				$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
-				$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
-				$Tween.start()
 				self.current_phase = phase_enum.select_unit
 			
 			
@@ -101,6 +94,13 @@ func _set_study_id(id: String):
 	if (self.current_phase == phase_enum.waiting):
 		self.current_phase = phase_enum.select_unit
 		
+func _generate_study_id():
+	var numbers = ''
+	for i in range(8):
+		numbers += String(randi())
+	
+	_set_study_id(numbers)
+		
 func _on_client_connected():
 	selector.coordinate_vector = Vector2(0, 0)
 	if (self._client.study_id != ''):
@@ -108,6 +108,73 @@ func _on_client_connected():
 	else:
 		self.current_phase = phase_enum.waiting
 	$CanvasLayer.queue_free()
+	
+func _set_current_phase(new_phase: int):
+	match current_phase:
+		phase_enum.select_unit:
+			match new_phase:
+				phase_enum.select_cell:
+					self.selected_indicator.rect_position = Vector2(100 * selected_unit.x, 100 * selected_unit.y) + Vector2(378, 121)
+					self.selected_indicator.visible = true
+					$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position - Vector2(219, 0), 0.15)
+					$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position - Vector2(0, 118), 0.15)
+					$Tween.start()
+					self.tooltips = [
+						'Move the selector using WASD or Arrow Keys.', 
+						'Select a [color=#8ae8ff]Blue[/color] space using Spacebar, Enter, or Left-Click to move your unit there.'
+					]
+		phase_enum.select_cell:
+			match new_phase:
+				phase_enum.select_unit:
+					self.selected_unit = null
+					self.selected_indicator.visible = false
+					self.tooltips = [
+						'Move the selector using WASD, Arrow Keys, or with the mouse.', 
+						'Hover over a space to see if it is [color=#e21e15]Threatened[/color] by an enemy.',
+						'Hover over a unit to see its health.',
+						'Select one of your units using Spacebar, Enter, or Left-Click to move.'
+					]
+					$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
+					$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
+					$Tween.start()
+				phase_enum.movement:
+					self.selector.visible = false
+					self.tooltips = []
+		phase_enum.movement:
+			match new_phase:
+				phase_enum.select_unit:
+					self.selected_unit = null
+					self.selected_indicator.visible = false
+					$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
+					$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
+					$Tween.start()
+					self.tooltips = [
+						'Move the selector using WASD, Arrow Keys, or with the mouse.', 
+						'Hover over a space to see if it is [color=#e21e15]Threatened[/color] by an enemy.',
+						'Hover over a unit to see its health.',
+						'Select one of your units using Spacebar, Enter, or Left-Click to move.'
+					]
+				phase_enum.win:
+					self.tooltips = []
+		phase_enum.connecting:
+			match new_phase:
+				phase_enum.select_unit:
+					self.tooltips = [
+						'Move the selector using WASD, Arrow Keys, or with the mouse.', 
+						'Hover over a space to see if it is [color=#e21e15]Threatened[/color] by an enemy.',
+						'Hover over a unit to see its health.',
+						'Select one of your units using Spacebar, Enter, or Left-Click to move.'
+					]
+		phase_enum.waiting:
+			match new_phase:
+				phase_enum.select_unit:
+					self.tooltips = [
+						'Move the selector using WASD, Arrow Keys, or with the mouse.', 
+						'Hover over a space to see if it is [color=#e21e15]Threatened[/color] by an enemy.',
+						'Hover over a unit to see its health.',
+						'Select one of your units using Spacebar, Enter, or Left-Click to move.'
+					]
+	current_phase = new_phase
 				
 func _set_selected_unit(new_unit: Unit):
 	selected_unit = new_unit
@@ -127,6 +194,11 @@ func _generate_potential_units():
 func _set_possibilities(new_possibilities: Array):
 	possibilities = new_possibilities
 	emit_signal("possibilities_changed", new_possibilities)
+	
+	
+func _set_tooltips(new_tooltips: Array):
+	tooltips = new_tooltips
+	emit_signal("tooltips_changed", new_tooltips)
 	
 func get_units():
 	return units_node.get_children()
@@ -187,11 +259,6 @@ func _check_win():
 		self.current_phase = phase_enum.win
 		return
 	self.current_phase = phase_enum.select_unit
-	self.selected_unit = null
-	self.selected_indicator.visible = false
-	$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
-	$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
-	$Tween.start()
 
 func _reset_state():
 	_set_study_id("")

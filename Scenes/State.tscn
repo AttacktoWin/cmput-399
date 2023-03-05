@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://Scripts/State.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Classes/Selector.tscn" type="PackedScene" id=2]
@@ -7,9 +7,10 @@
 [ext_resource path="res://Scenes/Classes/PossibilitiesPanel.tscn" type="PackedScene" id=5]
 [ext_resource path="res://Assets/Tiles/selected_1.png" type="Texture" id=6]
 [ext_resource path="res://Assets/Tiles/selected_0.png" type="Texture" id=7]
-[ext_resource path="res://Scenes/UnitPanel.tscn" type="PackedScene" id=8]
+[ext_resource path="res://Scenes/Classes/UnitPanel.tscn" type="PackedScene" id=8]
 [ext_resource path="res://Assets/back_cave.png" type="Texture" id=9]
 [ext_resource path="res://Scripts/Camera.gd" type="Script" id=10]
+[ext_resource path="res://Scenes/Classes/HelpPanel.tscn" type="PackedScene" id=11]
 
 [sub_resource type="AnimatedTexture" id=1]
 flags = 4
@@ -43,12 +44,18 @@ color = Color( 0, 0, 0, 0.360784 )
 [node name="Client" type="Node" parent="."]
 script = ExtResource( 4 )
 
-[node name="Panel" parent="." instance=ExtResource( 5 )]
-margin_left = 73.0
-margin_top = 129.0
-margin_right = 223.0
-margin_bottom = 279.0
+[node name="PossibilitiesPanel" parent="." instance=ExtResource( 5 )]
+margin_left = 70.0
+margin_top = 130.0
+margin_right = 220.0
+margin_bottom = 280.0
 mouse_filter = 2
+
+[node name="HelpPanel" parent="." instance=ExtResource( 11 )]
+margin_left = 804.0
+margin_top = 130.0
+margin_right = 804.0
+margin_bottom = 130.0
 
 [node name="Cell" parent="." instance=ExtResource( 3 )]
 

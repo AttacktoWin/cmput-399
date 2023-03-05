@@ -42,8 +42,6 @@ State="*res://Scenes/State.tscn"
 
 [display]
 
-window/size/resizable=false
-window/size/fullscreen=true
 window/stretch/mode="2d"
 
 [gui]
