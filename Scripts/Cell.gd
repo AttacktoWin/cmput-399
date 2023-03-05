@@ -58,14 +58,15 @@ func _on_unit_selected(unit_x: int, unit_y: int):
 func _on_unit_deselected():
 	if (self.current_state == state.movement):
 		self.current_state = state.default
-		if (is_instance_valid(ghost)):
-			for child in $CanvasLayer.get_children():
-				if (child is Unit):
-					child.queue_free()
-			ghost = null
+		for child in $CanvasLayer.get_children():
+			child.queue_free()
+		ghost = null
 		
 func _on_cell_hovered(cell_x: int, cell_y: int):
 	if (!(cell_x == self.x && cell_y == self.y) && !([cell_x, cell_y] in self.nbrs)):
+		for child in $CanvasLayer.get_children():
+			child.queue_free()
+		ghost = null
 		if (State.selected_unit != null && [State.selected_unit.x, State.selected_unit.y] in self.nbrs):
 			var changed := false
 			for unit in State.get_player_units():
@@ -74,6 +75,7 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 					self.threatened = false
 					return
 			self.current_state = state.movement
+			self.threatened = false
 		else:
 			self.current_state = state.default
 			self.threatened = false
@@ -104,6 +106,9 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 			possibilities.append("No battles.")
 		State.possibilities = possibilities
 	elif ([cell_x, cell_y] in self.nbrs):
+		for child in $CanvasLayer.get_children():
+			child.queue_free()
+		ghost = null
 		for enemy in enemies:
 			if (enemy.x == cell_x && enemy.y == cell_y):
 				# enemy is neighbour
@@ -121,17 +126,15 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 			self.threatened = false
 			self.current_state = state.default
 			
-	if (self.current_state == state.movement && [cell_x, cell_y] == [self.x, self.y]):
+	if (self.current_state == state.movement && cell_x == self.x && cell_y == self.y):
 		self.ghost = State.selected_unit.duplicate()
 		$CanvasLayer.add_child(ghost)
 		self.ghost.coordinate_vector = Vector2(self.x, self.y)
 		call_deferred("_set_ghost_transparency")
 	else:
-		if (is_instance_valid(ghost)):
-			for child in $CanvasLayer.get_children():
-				if (child is Unit):
-					child.queue_free()
-			ghost = null
+		for child in $CanvasLayer.get_children():
+			child.queue_free()
+		ghost = null
 			
 func _set_ghost_transparency():
 	ghost.sprite.modulate = Color(1.0, 1.0, 1.0, 0.5)
