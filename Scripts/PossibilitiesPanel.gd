@@ -11,7 +11,7 @@ func _ready():
 
 
 func _on_possibilities_changed(possibilities: Array):
-	text.bbcode_text = "[b]Possibilites:[/b]\n" + "\n\n".join(possibilities)
+	text.bbcode_text = "[b]Possibilites:[/b]\n\n" + "\n\n".join(possibilities)
 	
 func _on_Text_resized():
 	self.rect_size.y = text.rect_size.y

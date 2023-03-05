@@ -5,8 +5,6 @@ extends Node2D
 # var a = 2
 # var b = "text"
 
-onready var text_box = $CanvasLayer/TextBox
-
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -23,9 +21,10 @@ func _input(event):
 		_on_Button_pressed()
 
 func _on_Button_pressed():
-	if (text_box.text.length() > 0):
-		var state = get_node("/root/State")
-		if (is_instance_valid(state)):
-			state._set_study_id(text_box.text)
-			state.visible = true
-			self.queue_free()
+	State._generate_study_id()
+	State.visible = true
+	self.queue_free()
+
+
+func _on_Quit_pressed():
+	get_tree().quit()

@@ -11,7 +11,7 @@ func _ready():
 
 
 func _on_tooltips_changed(tooltips: Array):
-	text.bbcode_text = "[b]How to Play:[/b]\n" + "\n\n".join(tooltips)
+	text.bbcode_text = "[b]How to Play:[/b]\n\n" + "\n\n".join(tooltips)
 	
 func _on_Text_resized():
 	self.rect_size.y = text.rect_size.y

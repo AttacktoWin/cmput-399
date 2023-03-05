@@ -62,3 +62,5 @@ frames = SubResource( 2 )
 [node name="Tween" type="Tween" parent="."]
 repeat = true
 playback/repeat = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]

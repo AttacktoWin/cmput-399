@@ -16,6 +16,8 @@ var nbrs: Array
 onready var sprite = $AnimatedSprite
 onready var tween = $Tween
 
+var ghost : Unit = null
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	sprite.material = sprite.material.duplicate(true)
@@ -56,6 +58,11 @@ func _on_unit_selected(unit_x: int, unit_y: int):
 func _on_unit_deselected():
 	if (self.current_state == state.movement):
 		self.current_state = state.default
+		if (is_instance_valid(ghost)):
+			for child in $CanvasLayer.get_children():
+				if (child is Unit):
+					child.queue_free()
+			ghost = null
 		
 func _on_cell_hovered(cell_x: int, cell_y: int):
 	if (!(cell_x == self.x && cell_y == self.y) && !([cell_x, cell_y] in self.nbrs)):
@@ -113,6 +120,21 @@ func _on_cell_hovered(cell_x: int, cell_y: int):
 		else:
 			self.threatened = false
 			self.current_state = state.default
+			
+	if (self.current_state == state.movement && [cell_x, cell_y] == [self.x, self.y]):
+		self.ghost = State.selected_unit.duplicate()
+		$CanvasLayer.add_child(ghost)
+		self.ghost.coordinate_vector = Vector2(self.x, self.y)
+		call_deferred("_set_ghost_transparency")
+	else:
+		if (is_instance_valid(ghost)):
+			for child in $CanvasLayer.get_children():
+				if (child is Unit):
+					child.queue_free()
+			ghost = null
+			
+func _set_ghost_transparency():
+	ghost.sprite.modulate = Color(1.0, 1.0, 1.0, 0.5)
 		
 func _set_threatened(is_threatened: bool):
 	threatened = is_threatened
