@@ -4,6 +4,8 @@ signal unit_selected(unit_x, unit_y)
 signal unit_deselected
 signal possibilities_changed(possibilities)
 signal tooltips_changed(tooltips)
+signal primary_unit_updated(unit)
+signal secondary_unit_updated(unit)
 signal shake_screen
 
 const Unit = preload("res://Scripts/Unit.gd")
@@ -49,8 +51,10 @@ func _ready():
 	selector.connect("cell_hovered", secondary_unit_panel, "_on_cell_hovered")
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 	self._client.connect("client_connected", self, "_on_client_connected")
-	connect("possibilities_changed", self.possibilities_panel, "_on_possibilities_changed")
 	connect("tooltips_changed", self.help_panel, "_on_tooltips_changed")
+	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
+	connect("primary_unit_updated", self.primary_unit_panel, "_display_unit_info")
+	connect("secondary_unit_updated", self.secondary_unit_panel, "_display_unit_info")
 	connect("shake_screen", self.camera, "set_shake")
 
 func _input(event):
@@ -88,7 +92,7 @@ func _input(event):
 			phase_enum.select_cell:
 				self.current_phase = phase_enum.select_unit
 			
-			
+	
 func _set_study_id(id: String):
 	self._client.study_id = id
 	if (self.current_phase == phase_enum.waiting):
@@ -206,14 +210,14 @@ func get_units():
 func get_player_units():
 	var players := []
 	for unit in units_node.get_children():
-		if (unit.allegiance == 0):
+		if (unit.allegiance == 0 && unit.hp > 0):
 			players.append(unit)
 	return players
 	
 func get_enemy_units():
 	var enemies := []
 	for unit in units_node.get_children():
-		if (unit.allegiance == 1):
+		if (unit.allegiance == 1 && unit.hp > 0):
 			enemies.append(unit)
 	return enemies
 	
@@ -232,12 +236,17 @@ func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
 	if (units[enemy_index].hp > int(enemy_unit[2]) || units[player_index].hp > int(player_unit[2])):
 		emit_signal("shake_screen")
 	
+	emit_signal("secondary_unit_updated", units[enemy_index])
+	
 	units[enemy_index].hp = int(enemy_unit[1])
 	units[enemy_index].coordinate_vector.x = int(enemy_unit[2])
 	units[enemy_index].coordinate_vector.y = int(enemy_unit[3])
 	units[player_index].hp = int(player_unit[1])
 	units[player_index].coordinate_vector.x = int(player_unit[2])
 	units[player_index].coordinate_vector.y = int(player_unit[3])
+	
+	emit_signal("primary_unit_updated", units[player_index])
+	emit_signal("secondary_unit_updated", units[enemy_index])
 	
 	if (player_index > enemy_index):
 		if (units[player_index].hp <= 0):

@@ -17,7 +17,7 @@ export var primary := false
 
 var unit_name := "" setget _set_unit_name
 onready var unit_name_label = $VBoxContainer/UnitName
-var unit_health := 3 setget _set_unit_health
+var unit_health := 5 setget _set_unit_health
 onready var health_bar = $VBoxContainer/HealthBarContainer/HealthBar
 
 # Called when the node enters the scene tree for the first time.
@@ -101,4 +101,5 @@ func _set_unit_health(new_health: int):
 		"health": unit_health,
 		"max_health": max_health
 	})
-	$Tween.interpolate_property(health_bar, "anchor_right", health_bar.anchor_right, float(unit_health) / max_health, 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$Tween.interpolate_property(health_bar, "anchor_right", health_bar.anchor_right, float(unit_health) / max_health, 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$Tween.start()
