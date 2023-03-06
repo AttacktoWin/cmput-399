@@ -52,7 +52,7 @@ func _ready():
 	self._client.connect("packet_data", self, "_update_state_from_packet")
 	self._client.connect("client_connected", self, "_on_client_connected")
 	connect("tooltips_changed", self.help_panel, "_on_tooltips_changed")
-	connect("possibilities_changed", self.panel, "_on_possibilities_changed")
+	connect("possibilities_changed", self.possibilities_panel, "_on_possibilities_changed")
 	connect("primary_unit_updated", self.primary_unit_panel, "_display_unit_info")
 	connect("secondary_unit_updated", self.secondary_unit_panel, "_display_unit_info")
 	connect("shake_screen", self.camera, "set_shake")

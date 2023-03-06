@@ -141,15 +141,7 @@ func _set_ghost_transparency():
 		
 func _set_threatened(is_threatened: bool):
 	threatened = is_threatened
-	if (is_threatened):
-		tween.interpolate_property(sprite.material, "shader_param/shine_progress", 
-			1.0, 0.49, 1.0, Tween.TRANS_SINE, Tween.EASE_IN)
-		tween.interpolate_property(sprite.material, "shader_param/shine_progress", 
-			0.49, 1.0, 1.0, Tween.TRANS_SINE, Tween.EASE_OUT, 1.0)
-		tween.start()
-	else:
-		tween.stop_all()
-		sprite.material.set_shader_param("shine_progress", 1.0)
+	sprite.material.set_shader_param("shader_on", is_threatened)
 		
 func _on_mouse_entered():
 	if (State.current_phase != State.phase_enum.select_unit && State.current_phase != State.phase_enum.select_cell):

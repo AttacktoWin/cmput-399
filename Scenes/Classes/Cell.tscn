@@ -10,30 +10,33 @@ extents = Vector2( 50, 49.5 )
 [sub_resource type="Shader" id=3]
 code = "shader_type canvas_item;
 
-uniform vec4 shine_color : hint_color = vec4(0.89, 0.12, 0.08, 1.0);
-uniform float shine_progress : hint_range(0.0, 1.0, 0.01) = 0.0;
-uniform float shine_size : hint_range(0.01, 1.0, 0.01) = 0.1;
-uniform float shine_angle : hint_range(0.0, 89.9, 0.1) = 45.0;
-
-float scale(float value, float inMin, float inMax, float outMin, float outMax) {
-    return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
-}
+uniform vec4 color_gap: hint_color = vec4(0.25);
+uniform vec4 color_stripe: hint_color = vec4(1.0, 0.75, 0.0, 1.0);
+uniform float divisions = 8.0; // increase for more stripe density
+uniform float stripe_bias = 2.5; // 1.0 means no stripes; 2.0 means stripes and gaps are equal size
+uniform float speed = 0.1;
+uniform float angle = 0.7854; // in radians
+uniform bool shader_on = true;
 
 void fragment() {
-    COLOR = texture(TEXTURE, UV);
-	float slope = tan(radians(shine_angle));
-	float progress = scale(shine_progress, 0.0, 1.0, -1.0 - shine_size - shine_size * slope, 1.0 * slope);
-    float shine = step(abs(slope * UV.x - UV.y), progress + shine_size + shine_size * slope) - step(abs(slope * UV.x - UV.y), progress);
-    COLOR.rgb = mix(COLOR.rgb, shine_color.rgb, shine * shine_color.a);
+	COLOR = texture(TEXTURE, UV);
+	float w = cos(angle) * UV.x + sin(angle) * UV.y - speed * TIME;
+	float stripe = floor(mod(w * divisions, stripe_bias)) >= 0.0001 ? 1.0 : 0.0;
+	if (shader_on) {
+		COLOR.rgb = mix(COLOR.rgb, color_stripe.rgb, stripe * color_stripe.a);
+	}
 }"
 
 [sub_resource type="ShaderMaterial" id=4]
 resource_local_to_scene = true
 shader = SubResource( 3 )
-shader_param/shine_color = Color( 0.89, 0.12, 0.08, 1 )
-shader_param/shine_progress = 1.0
-shader_param/shine_size = 0.1
-shader_param/shine_angle = 45.0
+shader_param/color_gap = Color( 0.25, 0.25, 0.25, 0.25 )
+shader_param/color_stripe = Color( 0.886275, 0.117647, 0.0823529, 1 )
+shader_param/divisions = 8.0
+shader_param/stripe_bias = 2.5
+shader_param/speed = 0.2
+shader_param/angle = 0.7854
+shader_param/shader_on = false
 
 [sub_resource type="SpriteFrames" id=2]
 animations = [ {
