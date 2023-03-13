@@ -50,7 +50,7 @@ func _on_data():
 		var enemy_unit = changed_units[1].split("/")
 		emit_signal("packet_data", enemy_unit, player_unit)
 
-func _send_packet(units: Array, player_points: int, enemy_points: int, chosen_unit: int, direction: String):
+func _send_packet(units: Array, chosen_unit: int, direction: String, strategy_select_mode: int):
 	var board := ""
 	for i in range(len(units)):
 		board += "{name}/{hp}/{x}/{y}/{weapon}/{allegiance}".format({
@@ -63,12 +63,11 @@ func _send_packet(units: Array, player_points: int, enemy_points: int, chosen_un
 		})
 		if (i < len(units) - 1):
 			board += ";"
-	var packet := "{study_id}|{board}|{player_points}|{enemy_points}|{chosen_unit}|{direction}".format({ 
+	var packet := "{study_id}|{board}|{chosen_unit}|{direction}|{selection_mode}".format({ 
 		"study_id": self.study_id,
-		"board": board, 
-		"player_points": player_points,
-		"enemy_points": enemy_points,
+		"board": board,
 		"chosen_unit": chosen_unit, 
-		"direction": direction
+		"direction": direction,
+		"selection_mode": strategy_select_mode
 	})
 	_client.get_peer(1).put_packet(packet.to_utf8())

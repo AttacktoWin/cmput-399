@@ -1,0 +1,3 @@
+[submodule "Server/src"]
+	path = Server/src
+	url = https://github.com/JawdatToume/RPSDungeons.git

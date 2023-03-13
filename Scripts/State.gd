@@ -10,12 +10,14 @@ signal shake_screen
 
 const Unit = preload("res://Scripts/Unit.gd")
 
+export var max_games := 3
+var current_game := 1
+var strategy_select_mode = 0
+export var survey_url := "https://google.com"
+
 onready var units_node = $Units
 
 var selected_unit: Unit setget _set_selected_unit
-
-var player_points := 0
-var enemy_points := 0
 
 var possibilities := [] setget _set_possibilities
 var tooltips := [] setget _set_tooltips
@@ -85,7 +87,7 @@ func _input(event):
 						direction = "a"
 					_:
 						return
-				self._client._send_packet(self.units_node.get_children(), self.player_points, self.enemy_points, self.units_node.get_children().find(selected_unit), direction)
+				self._client._send_packet(self.units_node.get_children(), self.get_player_units().find(selected_unit), direction, self.strategy_select_mode)
 				self.current_phase = phase_enum.movement
 	if (event.is_action_pressed("cancel")):
 		match self.current_phase:
@@ -100,8 +102,8 @@ func _set_study_id(id: String):
 		
 func _generate_study_id():
 	var numbers = ''
-	for i in range(8):
-		numbers += String(randi())
+	for i in range(10):
+		numbers += String(randi() % 10)
 	
 	_set_study_id(numbers)
 		
@@ -111,14 +113,14 @@ func _on_client_connected():
 		self.current_phase = phase_enum.select_unit
 	else:
 		self.current_phase = phase_enum.waiting
-	$CanvasLayer.queue_free()
+	$CanvasLayer.hide()
 	
 func _set_current_phase(new_phase: int):
 	match current_phase:
 		phase_enum.select_unit:
 			match new_phase:
 				phase_enum.select_cell:
-					self.selected_indicator.rect_position = Vector2(100 * selected_unit.x, 100 * selected_unit.y) + Vector2(378, 121)
+					self.selected_indicator.rect_position = Vector2(100 * selected_unit.x, 100 * (2 - selected_unit.y)) + Vector2(378, 121)
 					self.selected_indicator.visible = true
 					$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position - Vector2(219, 0), 0.15)
 					$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position - Vector2(0, 118), 0.15)
@@ -149,6 +151,7 @@ func _set_current_phase(new_phase: int):
 				phase_enum.select_unit:
 					self.selected_unit = null
 					self.selected_indicator.visible = false
+					self.selector.visible = true
 					$Tween.interpolate_property(primary_unit_panel, "rect_position", primary_unit_panel.rect_position, primary_unit_panel.rect_position + Vector2(219, 0), 0.15)
 					$Tween.interpolate_property(secondary_unit_panel, "rect_position", secondary_unit_panel.rect_position, secondary_unit_panel.rect_position + Vector2(0, 118), 0.15)
 					$Tween.start()
@@ -159,7 +162,13 @@ func _set_current_phase(new_phase: int):
 						'Select one of your units using Spacebar, Enter, or Left-Click to move.'
 					]
 				phase_enum.win:
+					self.selected_indicator.visible = false
+					self.selector.visible = false
 					self.tooltips = []
+					if (self.current_game < self.max_games):
+						var win_screen = preload("res://Scenes/Win.tscn").instance()
+						win_screen.set_text("You Won!" if len(self.get_enemy_units()) == 0 else "You Lost...")
+						add_child(win_screen)
 		phase_enum.connecting:
 			match new_phase:
 				phase_enum.select_unit:
@@ -194,6 +203,9 @@ func _generate_potential_units():
 	units_node.add_child(Unit.make("Enemy Rock", 5, 2, 2, 0, 1))
 	units_node.add_child(Unit.make("Enemy Paper", 5, 0, 2, 1, 1))
 	units_node.add_child(Unit.make("Enemy Scissors", 5, 1, 2, 2, 1))
+	if (current_phase == phase_enum.waiting):
+		$CanvasLayer.hide()
+		self.current_phase = phase_enum.select_unit
 	
 func _set_possibilities(new_possibilities: Array):
 	possibilities = new_possibilities
@@ -233,7 +245,7 @@ func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
 		if (units[u].unit_name == player_unit[0]):
 			player_index = u
 	
-	if (units[enemy_index].hp > int(enemy_unit[2]) || units[player_index].hp > int(player_unit[2])):
+	if (units[enemy_index].hp > int(enemy_unit[1]) || units[player_index].hp > int(player_unit[1])):
 		emit_signal("shake_screen")
 	
 	emit_signal("secondary_unit_updated", units[enemy_index])
@@ -270,15 +282,24 @@ func _check_win():
 	self.current_phase = phase_enum.select_unit
 
 func _reset_state():
-	_set_study_id("")
+	$CanvasLayer/ConnectingText/Text.bbcode_text = "[center]Loading next game...[/center]"
+	$CanvasLayer.show()
+	self.current_game += 1
+	if (self._client.study_id == 'tutorial'):
+		self._generate_study_id()
+	else:
+		self.strategy_select_mode = 1
 	self.possibilities = []
+	self.selected_unit = null
+	primary_unit_panel.rect_position = Vector2(351, 488)
+	secondary_unit_panel.rect_position = Vector2(529, 606)
+	selector.coordinate_vector = Vector2(0, 0)
+	selector.visible = true
+	selected_indicator.visible = false
 	for unit in units_node.get_children():
 		unit.queue_free()
 	call_deferred("_generate_potential_units")
 	self.current_phase = phase_enum.waiting
-	var title_screen = load("res://Scenes/Title.tscn")
-	var scene = title_screen.instance()
-	get_tree().add_child(scene)
 
 func _on_cell_hovered(x: int, y: int):
 	selector.coordinate_vector = Vector2(x, y)

@@ -59,6 +59,10 @@ func _display_unit_info(unit: Unit):
 			self.displayed_unit = UnitEnum.none
 	self.unit_name = unit.unit_name
 	self.unit_health = unit.hp
+	if (unit.allegiance == 1):
+		unit_display.modulate = Color(1, 0.5, 0.5)
+	else:
+		unit_display.modulate = Color(1, 1, 1)
 	$VBoxContainer/HealthBarContainer.visible = true
 	$VBoxContainer/HealthCount.visible = true
 
@@ -101,5 +105,5 @@ func _set_unit_health(new_health: int):
 		"health": unit_health,
 		"max_health": max_health
 	})
-	$Tween.interpolate_property(health_bar, "anchor_right", health_bar.anchor_right, float(unit_health) / max_health, 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	$Tween.interpolate_property(health_bar, "anchor_right", health_bar.anchor_right, max(float(unit_health) / max_health, 0), 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	$Tween.start()

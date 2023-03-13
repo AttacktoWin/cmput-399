@@ -41,10 +41,10 @@ func _coordinate_vector_changed(new_vector: Vector2):
 	self.x = coordinate_vector.x
 	self.y = coordinate_vector.y
 	if (is_instance_valid(tween)):
-		tween.interpolate_property(self, "position", self.position, coordinate_vector * 100 + Vector2(400, 200), 0.3)
+		tween.interpolate_property(self, "position", self.position, Vector2(coordinate_vector.x, 2 - coordinate_vector.y) * 100 + Vector2(400, 200), 0.3)
 		tween.start()
 	else:
-		self.position = coordinate_vector * 100 + Vector2(400, 200)
+		self.position = Vector2(coordinate_vector.x, 2 - coordinate_vector.y) * 100 + Vector2(400, 200)
 
 func _set_weapon(new_weapon):
 	match new_weapon:

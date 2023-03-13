@@ -21,7 +21,8 @@ func _input(event):
 		_on_Button_pressed()
 
 func _on_Button_pressed():
-	State._generate_study_id()
+	# State._generate_study_id()
+	State._set_study_id('tutorial')
 	State.visible = true
 	self.queue_free()
 
