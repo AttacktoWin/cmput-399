@@ -52,34 +52,35 @@ class RPSWebSocket(WebSocket):
             enemy_direction = action_list[1]
             state.enemies[enemy_index].move(enemy_direction)
             state.resolve()
-            # [name/hp/x/y/alive]|[name/hp/x/y/alive]
+            # [name/hp/x/y/direction]|[name/hp/x/y/direction]
             player_unit = state.units[chosen_unit]
             enemy_unit = state.enemies[enemy_index]
-            self.send_message("%s/%i/%i/%i/%i|%s/%i/%i/%i/%i" % (
+            self.send_message("%s/%i/%i/%i/%s|%s/%i/%i/%i/%s" % (
                 player_unit.name,
                 player_unit.stats.hp,
                 player_unit.stats.x,
                 player_unit.stats.y,
-                int(player_unit.alive),
+                direction,
                 enemy_unit.name,
                 enemy_unit.stats.hp,
                 enemy_unit.stats.x,
                 enemy_unit.stats.y,
-                int(enemy_unit.alive)
+                enemy_direction
             ))
             return
 
         if not os.path.exists('logs/%s.csv' % study_id):
             with open('logs/%s.csv' % study_id, 'w') as log_file:
-                log_file.write("Player Unit, Player Direction, Player Strategy, Chosen Strategy, "
+                log_file.write("State, Player Unit, Player Direction, Player Strategy, Chosen Strategy, "
                                "Enemy Unit, Enemy Move\n")
 
-        with open('logs/%s.txt' % study_id, 'a') as log_file:
+        with open('logs/%s.csv' % study_id, 'a') as log_file:
             closest_strategy = 0
             if study_id not in self.adapters.keys():
                 self.adapters[study_id] = adapter()
             else:
                 closest_strategy = self.adapters[study_id].getStrategy()
+            initial_state = state.hash(0)
             Q = self.adapters[study_id].Q2[closest_strategy]
             Q, move_list = get_move_set(Q, state, state.players, state.enemies)
             index = move_list.index([chosen_unit, direction])
@@ -96,7 +97,8 @@ class RPSWebSocket(WebSocket):
             state.enemies[enemy_index].move(enemy_direction)
             state.resolve()
 
-            log_file.write("%i,%s,%s,%s,%i,%s\n" % (
+            log_file.write("%s,%i,%s,%s,%s,%i,%s\n" % (
+                initial_state,
                 chosen_unit,
                 direction,
                 QNames[closest_strategy],

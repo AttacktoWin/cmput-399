@@ -61,3 +61,18 @@ func kill_unit():
 	tween.interpolate_property(self, "modulate", Color(1, 0, 0), Color(0, 0, 0), 0.1, 0, Tween.EASE_OUT, 0.2)
 	tween.interpolate_callback(self, 0.3, "queue_free")
 	tween.start()
+
+func bounce(direction: String):
+	var reverse_point: Vector2
+	match direction:
+		"w":
+			reverse_point = Vector2(self.coordinate_vector.x, 2 - (self.coordinate_vector.y + 1)) * 100 + Vector2(400, 200)
+		"a":
+			reverse_point = Vector2(self.coordinate_vector.x - 1, 2 - self.coordinate_vector.y) * 100 + Vector2(400, 200)
+		"s":
+			reverse_point = Vector2(self.coordinate_vector.x, 2 - (self.coordinate_vector.y - 1)) * 100 + Vector2(400, 200)
+		"d":
+			reverse_point = Vector2(self.coordinate_vector.x + 1, 2 - self.coordinate_vector.y) * 100 + Vector2(400, 200)
+	tween.interpolate_property(self, "position", self.position, reverse_point, 0.2)
+	tween.interpolate_property(self, "position", reverse_point, self.position, 0.15, 0.2)
+	tween.start()

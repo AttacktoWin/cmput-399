@@ -78,11 +78,11 @@ func _input(event):
 				var direction = "w"
 				match self.selected_unit.coordinate_vector - self.selector.coordinate_vector:
 					Vector2(0, 1):
-						direction = "w"
+						direction = "s"
 					Vector2(-1, 0):
 						direction = "d"
 					Vector2(0, -1):
-						direction = "s"
+						direction = "w"
 					Vector2(1, 0):
 						direction = "a"
 					_:
@@ -245,17 +245,32 @@ func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
 		if (units[u].unit_name == player_unit[0]):
 			player_index = u
 	
-	if (units[enemy_index].hp > int(enemy_unit[1]) || units[player_index].hp > int(player_unit[1])):
-		emit_signal("shake_screen")
-	
 	emit_signal("secondary_unit_updated", units[enemy_index])
+	var bounced = false
+	if ([units[enemy_index].x, units[enemy_index].y] == [int(enemy_unit[2]), int(enemy_unit[3])]):
+		# Enemy got hit and bounced back
+		units[enemy_index].bounce(enemy_unit[4])
+		bounced = true
+	else:
+		units[enemy_index].coordinate_vector.x = int(enemy_unit[2])
+		units[enemy_index].coordinate_vector.y = int(enemy_unit[3])
+	if ([units[player_index].x, units[player_index].y] == [int(player_unit[2]), int(player_unit[3])]):
+		# Player got hit and bounced back
+		units[enemy_index].bounce(enemy_unit[4])
+		bounced = true
+	else:
+		units[player_index].coordinate_vector.x = int(player_unit[2])
+		units[player_index].coordinate_vector.y = int(player_unit[3])
 	
+	if (units[enemy_index].hp > int(enemy_unit[1]) || units[player_index].hp > int(player_unit[1])):
+		if (bounced):
+			$Tween.interpolate_callback(self, 0.2, "emit_signal", "shake_screen")
+			$Tween.start()
+		else:
+			emit_signal("shake_screen")
+		
 	units[enemy_index].hp = int(enemy_unit[1])
-	units[enemy_index].coordinate_vector.x = int(enemy_unit[2])
-	units[enemy_index].coordinate_vector.y = int(enemy_unit[3])
 	units[player_index].hp = int(player_unit[1])
-	units[player_index].coordinate_vector.x = int(player_unit[2])
-	units[player_index].coordinate_vector.y = int(player_unit[3])
 	
 	emit_signal("primary_unit_updated", units[player_index])
 	emit_signal("secondary_unit_updated", units[enemy_index])
