@@ -15,7 +15,7 @@ func _ready():
 	tween.interpolate_property(color, "color", color.color, Color(0, 0, 0, 0.5), 1)
 	tween.start()
 	if (!next_game_available):
-		main_button.text = "Open Survey"
+		main_button.text = "Continue"
 	label.bbcode_text = self.text
 
 
@@ -28,5 +28,6 @@ func _on_NextGame_pressed():
 		self.queue_free()
 		State._reset_state()
 	else:
-		OS.clipboard = State._client.study_id
-		OS.shell_open(State.survey_url)
+		var debrief = preload("res://Scenes/Debrief.tscn").instance()
+		get_tree().add_child(debrief)
+		self.queue_free()

@@ -69,8 +69,8 @@ class RPSWebSocket(WebSocket):
             ))
             return
 
-        if not os.path.exists('logs/%s.txt' % study_id):
-            with open('logs/%s.txt' % study_id, 'w') as log_file:
+        if not os.path.exists('logs/%s.csv' % study_id):
+            with open('logs/%s.csv' % study_id, 'w') as log_file:
                 log_file.write("Player Unit, Player Direction, Player Strategy, Chosen Strategy, "
                                "Enemy Unit, Enemy Move\n")
 

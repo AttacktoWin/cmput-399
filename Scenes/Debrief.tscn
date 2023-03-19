@@ -1,0 +1,144 @@
+[gd_scene load_steps=16 format=2]
+
+[ext_resource path="res://Assets/Poppins-Regular.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://Scripts/Debrief.gd" type="Script" id=2]
+[ext_resource path="res://Assets/back_cave.png" type="Texture" id=3]
+
+[sub_resource type="DynamicFont" id=1]
+size = 46
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=2]
+default_font = SubResource( 1 )
+
+[sub_resource type="DynamicFont" id=3]
+size = 24
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=4]
+default_font = SubResource( 3 )
+
+[sub_resource type="DynamicFont" id=5]
+size = 24
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=6]
+default_font = SubResource( 5 )
+
+[sub_resource type="DynamicFont" id=7]
+size = 30
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=8]
+default_font = SubResource( 7 )
+
+[sub_resource type="DynamicFont" id=9]
+size = 24
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=10]
+default_font = SubResource( 9 )
+
+[sub_resource type="DynamicFont" id=11]
+size = 30
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=12]
+default_font = SubResource( 11 )
+
+[node name="Debrief" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+texture = ExtResource( 3 )
+expand = true
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+color = Color( 0, 0, 0, 0.501961 )
+
+[node name="Text" type="RichTextLabel" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -349.0
+margin_top = -235.0
+margin_right = 349.0
+margin_bottom = -100.0
+theme = SubResource( 2 )
+bbcode_enabled = true
+bbcode_text = "[center]You've finished all 3 games for the study.[/center]"
+text = "You've finished all 3 games for the study."
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -253.0
+margin_top = 23.5
+margin_right = 253.0
+margin_bottom = 102.5
+theme = SubResource( 4 )
+bbcode_enabled = true
+bbcode_text = "[center]Please fill out the survey linked below. You'll need your Study ID for it.[/center]"
+text = "Please fill out the survey linked below. You'll need your Study ID for it."
+
+[node name="YourId" type="RichTextLabel" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -302.0
+margin_top = -51.0
+margin_right = -112.0
+margin_bottom = -11.0
+theme = SubResource( 6 )
+text = "Your Study ID:"
+
+[node name="SurveyId" type="TextEdit" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -121.0
+margin_top = -60.0
+margin_right = 181.0
+margin_bottom = -10.0
+theme = SubResource( 8 )
+text = "Test"
+readonly = true
+middle_mouse_paste_enabled = false
+
+[node name="Copy" type="Button" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = 190.0
+margin_top = -55.5
+margin_right = 266.0
+margin_bottom = -14.5
+theme = SubResource( 10 )
+text = "Copy"
+
+[node name="TakeSurvey" type="Button" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -94.5
+margin_top = 123.5
+margin_right = 94.5
+margin_bottom = 172.5
+theme = SubResource( 12 )
+text = "Take Survey"
+
+[connection signal="pressed" from="CanvasLayer/ColorRect/Copy" to="." method="_on_Copy_pressed"]
+[connection signal="pressed" from="CanvasLayer/ColorRect/TakeSurvey" to="." method="_on_TakeSurvey_pressed"]
