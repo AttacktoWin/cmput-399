@@ -18,6 +18,7 @@ export var survey_url := "https://google.com"
 onready var units_node = $Units
 
 var selected_unit: Unit setget _set_selected_unit
+var selected_direction: String
 
 var possibilities := [] setget _set_possibilities
 var tooltips := [] setget _set_tooltips
@@ -75,19 +76,18 @@ func _input(event):
 					if (unit.x == selector.coordinate_vector.x && unit.y == selector.coordinate_vector.y):
 						# Don't allow the player to fight themselves
 						return
-				var direction = "w"
 				match self.selected_unit.coordinate_vector - self.selector.coordinate_vector:
 					Vector2(0, 1):
-						direction = "s"
+						self.selected_direction = "s"
 					Vector2(-1, 0):
-						direction = "d"
+						self.selected_direction = "d"
 					Vector2(0, -1):
-						direction = "w"
+						self.selected_direction = "w"
 					Vector2(1, 0):
-						direction = "a"
+						self.selected_direction = "a"
 					_:
 						return
-				self._client._send_packet(self.units_node.get_children(), self.get_player_units().find(selected_unit), direction, self.strategy_select_mode)
+				self._client._send_packet(self.units_node.get_children(), self.get_player_units().find(selected_unit), self.selected_direction, self.strategy_select_mode)
 				self.current_phase = phase_enum.movement
 	if (event.is_action_pressed("cancel")):
 		match self.current_phase:
@@ -172,6 +172,7 @@ func _set_current_phase(new_phase: int):
 		phase_enum.connecting:
 			match new_phase:
 				phase_enum.select_unit:
+					$MusicLoop.play()
 					self.tooltips = [
 						'Move the selector using WASD, Arrow Keys, or with the mouse.', 
 						'Hover over a space to see if it is [color=#e21e15]Threatened[/color] by an enemy.',
@@ -181,6 +182,7 @@ func _set_current_phase(new_phase: int):
 		phase_enum.waiting:
 			match new_phase:
 				phase_enum.select_unit:
+					$MusicLoop.play()					
 					self.tooltips = [
 						'Move the selector using WASD, Arrow Keys, or with the mouse.', 
 						'Hover over a space to see if it is [color=#e21e15]Threatened[/color] by an enemy.',
@@ -233,59 +235,58 @@ func get_enemy_units():
 			enemies.append(unit)
 	return enemies
 	
-func _update_state_from_packet(enemy_unit: Array, player_unit: Array):
-	var units = self.units_node.get_children()
-	var enemy_index := -1
-	var player_index := -1
-	for u in range(len(units)):
-		if (player_index != -1 && enemy_index != -1):
+func _update_state_from_packet(enemy_name: String, enemy_direction: String):
+	var enemy_unit: Unit
+	var units = get_enemy_units()
+	for u in units:
+		if u.unit_name == enemy_name:
+			enemy_unit = u
+			emit_signal("secondary_unit_updated", u)
 			break
-		if (units[u].unit_name == enemy_unit[0]):
-			enemy_index = u
-		if (units[u].unit_name == player_unit[0]):
-			player_index = u
 	
-	emit_signal("secondary_unit_updated", units[enemy_index])
-	var bounced = false
-	if ([units[enemy_index].x, units[enemy_index].y] == [int(enemy_unit[2]), int(enemy_unit[3])]):
-		# Enemy got hit and bounced back
-		units[enemy_index].bounce(enemy_unit[4])
-		bounced = true
-	else:
-		units[enemy_index].coordinate_vector.x = int(enemy_unit[2])
-		units[enemy_index].coordinate_vector.y = int(enemy_unit[3])
-	if ([units[player_index].x, units[player_index].y] == [int(player_unit[2]), int(player_unit[3])]):
-		# Player got hit and bounced back
-		units[enemy_index].bounce(enemy_unit[4])
-		bounced = true
-	else:
-		units[player_index].coordinate_vector.x = int(player_unit[2])
-		units[player_index].coordinate_vector.y = int(player_unit[3])
+	self.selected_unit.move(self.selected_direction)
+	enemy_unit.move(enemy_direction)
+	_resolve_state()
 	
-	if (units[enemy_index].hp > int(enemy_unit[1]) || units[player_index].hp > int(player_unit[1])):
-		if (bounced):
-			$Tween.interpolate_callback(self, 0.2, "emit_signal", "shake_screen")
-			$Tween.start()
-		else:
-			emit_signal("shake_screen")
+func _resolve_state():
+	var players = get_player_units()
+	var enemies = get_enemy_units()
+	
+	var primary_unit := selected_unit
+	var secondary_unit: Unit
+	
+	var delay := 0.0
+	
+	for unit in players:
+		for p in players:
+			if unit.coordinate_vector == p.coordinate_vector && unit.unit_name != p.unit_name:
+				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "primary_unit_updated", unit)
+				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "secondary_unit_updated", p)
+				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "shake_screen")
+				$Tween.interpolate_deferred_callback(p, delay, "attack", unit)
+				$Tween.interpolate_deferred_callback(unit, delay, "attack", p)
+				$Tween.interpolate_deferred_callback(p, delay + 0.2, "move", unit.last)
+				$Tween.interpolate_deferred_callback(unit, delay + 0.2, "reverse", unit.last)
+				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "primary_unit_updated", unit)
+				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "secondary_unit_updated", p)
+				delay += 0.5
+		for e in enemies:
+			if unit.coordinate_vector == e.coordinate_vector:
+				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "primary_unit_updated", unit)
+				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "secondary_unit_updated", e)
+				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "shake_screen")
+				$Tween.interpolate_deferred_callback(e, delay, "attack", unit)
+				$Tween.interpolate_deferred_callback(unit, delay, "attack", e)
+				$Tween.interpolate_deferred_callback(e, delay + 0.2, "move", unit.last)
+				$Tween.interpolate_deferred_callback(unit, delay + 0.2, "reverse", unit.last)
+				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "primary_unit_updated", unit)
+				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "secondary_unit_updated", e)
+				delay += 0.5
 		
-	units[enemy_index].hp = int(enemy_unit[1])
-	units[player_index].hp = int(player_unit[1])
+		$Tween.interpolate_deferred_callback(self, delay + 0.1, "_check_win")
+		$Tween.start()
 	
-	emit_signal("primary_unit_updated", units[player_index])
-	emit_signal("secondary_unit_updated", units[enemy_index])
 	
-	if (player_index > enemy_index):
-		if (units[player_index].hp <= 0):
-			units[player_index].kill_unit()
-		if (units[enemy_index].hp <= 0):
-			units[enemy_index].kill_unit()
-	else:
-		if (units[enemy_index].hp <= 0):
-			units[enemy_index].kill_unit()
-		if (units[player_index].hp <= 0):
-			units[player_index].kill_unit()
-	call_deferred("_check_win")
 
 func _check_win():
 	if (len(get_player_units()) == 0):

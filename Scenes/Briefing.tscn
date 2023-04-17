@@ -1,0 +1,112 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://Assets/Poppins-Regular.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://Assets/back_cave.png" type="Texture" id=2]
+[ext_resource path="res://Scripts/Briefing.gd" type="Script" id=3]
+
+[sub_resource type="DynamicFont" id=1]
+size = 36
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=2]
+default_font = SubResource( 1 )
+
+[sub_resource type="DynamicFont" id=3]
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=4]
+default_font = SubResource( 3 )
+
+[sub_resource type="DynamicFont" id=5]
+font_data = ExtResource( 1 )
+
+[sub_resource type="Theme" id=6]
+default_font = SubResource( 5 )
+
+[node name="Briefing" type="Node2D"]
+script = ExtResource( 3 )
+pages = [ PoolStringArray( "You have been invited to participate in this research project studying how players respond to changes in enemy AI strategies." ), PoolStringArray( "For this study, you will play a series of 3 matches in the RPS Dungeons game.", "The goal of each match is to destroy all of your opponent\'s units before they destroy yours.", "The first match will be for you to learn the controls and mechanics of the game. It will not be logged for the study.", "The following 2 matches will feature different AI strategies. Every action you take in the game will be logged as part of the study.", "You do not need to win any of the matches though it is encouraged to try to win!" ), PoolStringArray( "By consenting to this study, you agree that all data collected on your actions in the game may be logged on a password-encrypted computer owned by the University of Alberta. Data logged from your actions will be attached to an anonymous study id which you will be provided. This id cannot be used to link data back to individual participants.", "Data collected for this study will remain on a password-encrypted computer owned by the University of Alberta for up to 3 years before being securly destroyed. During this time, the data may be used for research studies on computer game and AI design.", "Your consent may be withdrawn at any point during this study." ) ]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+texture = ExtResource( 2 )
+expand = true
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+margin_right = 1024.0
+margin_bottom = 600.0
+color = Color( 0, 0, 0, 0.501961 )
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.2
+anchor_right = 0.8
+anchor_bottom = 1.0
+margin_left = -20.0
+margin_right = 20.0
+color = Color( 0, 0, 0, 0.392157 )
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -217.0
+margin_top = 28.0
+margin_right = 218.0
+margin_bottom = 81.0
+theme = SubResource( 2 )
+bbcode_enabled = true
+bbcode_text = "[center]Info and Consent Form[/center]"
+text = "Info and Consent Form"
+
+[node name="Content" type="RichTextLabel" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.25
+anchor_right = 0.75
+margin_left = -20.0
+margin_top = 91.0
+margin_right = 20.0
+margin_bottom = 131.0
+theme = SubResource( 4 )
+bbcode_text = "Lorem Ipsum"
+text = "Lorem Ipsum"
+fit_content_height = true
+
+[node name="Next" type="Button" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = 46.0
+margin_top = -90.0
+margin_right = 124.0
+margin_bottom = -61.0
+text = "Next"
+
+[node name="Previous" type="Button" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -124.0
+margin_top = -91.0
+margin_right = -46.0
+margin_bottom = -62.0
+theme = SubResource( 6 )
+text = "Previous"
+
+[node name="CheckBox" type="CheckBox" parent="CanvasLayer/ColorRect"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -223.0
+margin_top = -121.0
+margin_right = 223.0
+margin_bottom = -97.0
+text = "I understand these terms and consent to participate in the study."
+
+[connection signal="pressed" from="CanvasLayer/ColorRect/Next" to="." method="_on_Next_pressed"]
+[connection signal="pressed" from="CanvasLayer/ColorRect/Previous" to="." method="_on_Previous_pressed"]
+[connection signal="pressed" from="CanvasLayer/ColorRect/CheckBox" to="." method="_on_CheckBox_pressed"]

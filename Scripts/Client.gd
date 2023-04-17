@@ -1,7 +1,7 @@
 class_name Client
 extends Node
 
-signal packet_data(enemy_unit, player_unit)
+signal packet_data(enemy_name, enemy_direction)
 signal client_connected
 
 export var websocket_url := "ws://localhost:5015"
@@ -45,10 +45,8 @@ func _socket_connected(proto = ""):
 func _on_data():
 	var data = _client.get_peer(1).get_packet().get_string_from_utf8()
 	if (data.length() > 0):
-		var changed_units := data.split("|") as PoolStringArray
-		var player_unit = changed_units[0].split("/")
-		var enemy_unit = changed_units[1].split("/")
-		emit_signal("packet_data", enemy_unit, player_unit)
+		var updated = data.split("|")
+		emit_signal("packet_data", updated[0], updated[1])
 
 func _send_packet(units: Array, chosen_unit: int, direction: String, strategy_select_mode: int):
 	var board := ""

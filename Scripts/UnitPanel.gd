@@ -48,6 +48,8 @@ func _draw():
 	draw_style_box(style_box, Rect2(POSITION, SIZE))
 	
 func _display_unit_info(unit: Unit):
+	if (!is_instance_valid(unit)):
+		return
 	match unit.weapon:
 		0:
 			self.displayed_unit = UnitEnum.rock

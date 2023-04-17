@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://Scripts/State.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/Classes/Selector.tscn" type="PackedScene" id=2]
@@ -11,6 +11,8 @@
 [ext_resource path="res://Assets/back_cave.png" type="Texture" id=9]
 [ext_resource path="res://Scripts/Camera.gd" type="Script" id=10]
 [ext_resource path="res://Scenes/Classes/HelpPanel.tscn" type="PackedScene" id=11]
+[ext_resource path="res://Assets/Sounds/music_zapsplat_game_music_action_dark_sniper_beats_electronic_millitary_018.mp3" type="AudioStream" id=12]
+[ext_resource path="res://Assets/Sounds/hit2.wav" type="AudioStream" id=13]
 
 [sub_resource type="AnimatedTexture" id=1]
 flags = 4
@@ -27,6 +29,10 @@ script = ExtResource( 1 )
 anchor_mode = 0
 current = true
 script = ExtResource( 10 )
+
+[node name="HitSound" type="AudioStreamPlayer" parent="Camera2D"]
+stream = ExtResource( 13 )
+volume_db = -14.182
 
 [node name="TextureRect" type="TextureRect" parent="."]
 margin_right = 1024.0
@@ -140,3 +146,7 @@ bbcode_enabled = true
 bbcode_text = "[center]Connecting to server...[/center]"
 text = "Connecting to server..."
 fit_content_height = true
+
+[node name="MusicLoop" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 12 )
+volume_db = -14.857

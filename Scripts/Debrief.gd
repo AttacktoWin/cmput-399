@@ -9,6 +9,7 @@ onready var survey_id = $CanvasLayer/ColorRect/SurveyId
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	State.visible = false
 	survey_id.text = State._client.study_id
 
 func _on_Copy_pressed():

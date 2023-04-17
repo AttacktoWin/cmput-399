@@ -50,21 +50,9 @@ class RPSWebSocket(WebSocket):
             Q, action_list, action = select_action(Q, state, state.enemies, state.players)
             enemy_index = action_list[0]
             enemy_direction = action_list[1]
-            state.enemies[enemy_index].move(enemy_direction)
-            state.resolve()
-            # [name/hp/x/y/direction]|[name/hp/x/y/direction]
-            player_unit = state.units[chosen_unit]
             enemy_unit = state.enemies[enemy_index]
-            self.send_message("%s/%i/%i/%i/%s|%s/%i/%i/%i/%s" % (
-                player_unit.name,
-                player_unit.stats.hp,
-                player_unit.stats.x,
-                player_unit.stats.y,
-                direction,
+            self.send_message("%s|%s" % (
                 enemy_unit.name,
-                enemy_unit.stats.hp,
-                enemy_unit.stats.x,
-                enemy_unit.stats.y,
                 enemy_direction
             ))
             return
@@ -82,9 +70,8 @@ class RPSWebSocket(WebSocket):
                 closest_strategy = self.adapters[study_id].getStrategy()
             initial_state = state.hash(0)
             Q = self.adapters[study_id].Q2[closest_strategy]
-            Q, move_list = get_move_set(Q, state, state.players, state.enemies)
-            index = move_list.index([chosen_unit, direction])
-            self.adapters[study_id].addMove(state.hash(0), index, len(move_list))
+            self.adapters[study_id].addMove(state.hash(0), [chosen_unit, direction], state, state.players,
+                                            state.enemies)
             if len(state.players) > chosen_unit:
                 state.players[chosen_unit].move(direction)
 
@@ -94,8 +81,6 @@ class RPSWebSocket(WebSocket):
             counter, action_list, action = select_action(counter, state, state.enemies, state.players)
             enemy_index = action_list[0]
             enemy_direction = action_list[1]
-            state.enemies[enemy_index].move(enemy_direction)
-            state.resolve()
 
             log_file.write("%s,%i,%s,%s,%s,%i,%s\n" % (
                 initial_state,
@@ -107,20 +92,10 @@ class RPSWebSocket(WebSocket):
                 enemy_direction
             ))
 
-            # [name/hp/x/y/alive]|[name/hp/x/y/alive]
-            player_unit = state.units[chosen_unit]
             enemy_unit = state.enemies[enemy_index]
-            self.send_message("%s/%i/%i/%i/%i|%s/%i/%i/%i/%i" % (
-                player_unit.name,
-                player_unit.stats.hp,
-                player_unit.stats.x,
-                player_unit.stats.y,
-                int(player_unit.alive),
+            self.send_message("%s|%s" % (
                 enemy_unit.name,
-                enemy_unit.stats.hp,
-                enemy_unit.stats.x,
-                enemy_unit.stats.y,
-                int(enemy_unit.alive)
+                enemy_direction
             ))
 
     def connected(self):

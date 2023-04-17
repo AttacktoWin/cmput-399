@@ -22,9 +22,7 @@ func _input(event):
 
 func _on_Button_pressed():
 	# State._generate_study_id()
-	State._set_study_id('tutorial')
-	State.visible = true
-	self.queue_free()
+	get_tree().change_scene("res://Scenes/Briefing.tscn")
 
 
 func _on_Quit_pressed():

@@ -9,6 +9,8 @@ var decay = 0.8
 var max_offset = Vector2(36, 64)
 var max_roll = 0.1
 
+onready var hit_sound = $HitSound
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -29,4 +31,5 @@ func rough_shake():
 	
 func set_shake(add_intensity = 0.5):
 	intensity = min(intensity + add_intensity, 1.0)
+	hit_sound.play()
 	
