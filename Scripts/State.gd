@@ -265,11 +265,11 @@ func _resolve_state():
 				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "shake_screen")
 				$Tween.interpolate_deferred_callback(p, delay, "attack", unit)
 				$Tween.interpolate_deferred_callback(unit, delay, "attack", p)
-				$Tween.interpolate_deferred_callback(p, delay + 0.2, "move", unit.last)
-				$Tween.interpolate_deferred_callback(unit, delay + 0.2, "reverse", unit.last)
-				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "primary_unit_updated", unit)
-				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "secondary_unit_updated", p)
-				delay += 0.5
+				$Tween.interpolate_deferred_callback(p, delay + 0.4, "move", unit.last)
+				$Tween.interpolate_deferred_callback(unit, delay + 0.4, "reverse", unit.last)
+				$Tween.interpolate_deferred_callback(self, delay + 0.4, "emit_signal", "primary_unit_updated", unit)
+				$Tween.interpolate_deferred_callback(self, delay + 0.4, "emit_signal", "secondary_unit_updated", p)
+				delay += 0.75
 		for e in enemies:
 			if unit.coordinate_vector == e.coordinate_vector:
 				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "primary_unit_updated", unit)
@@ -277,13 +277,13 @@ func _resolve_state():
 				$Tween.interpolate_deferred_callback(self, delay, "emit_signal", "shake_screen")
 				$Tween.interpolate_deferred_callback(e, delay, "attack", unit)
 				$Tween.interpolate_deferred_callback(unit, delay, "attack", e)
-				$Tween.interpolate_deferred_callback(e, delay + 0.2, "move", unit.last)
-				$Tween.interpolate_deferred_callback(unit, delay + 0.2, "reverse", unit.last)
-				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "primary_unit_updated", unit)
-				$Tween.interpolate_deferred_callback(self, delay + 0.2, "emit_signal", "secondary_unit_updated", e)
-				delay += 0.5
+				$Tween.interpolate_deferred_callback(e, delay + 0.4, "move", unit.last)
+				$Tween.interpolate_deferred_callback(unit, delay + 0.4, "reverse", unit.last)
+				$Tween.interpolate_deferred_callback(self, delay + 0.4, "emit_signal", "primary_unit_updated", unit)
+				$Tween.interpolate_deferred_callback(self, delay + 0.4, "emit_signal", "secondary_unit_updated", e)
+				delay += 0.75
 		
-		$Tween.interpolate_deferred_callback(self, delay + 0.1, "_check_win")
+		$Tween.interpolate_deferred_callback(self, delay + 0.3, "_check_win")
 		$Tween.start()
 	
 	
