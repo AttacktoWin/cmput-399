@@ -31,3 +31,7 @@ func _on_NextGame_pressed():
 		var debrief = preload("res://Scenes/Debrief.tscn").instance()
 		get_tree().add_child(debrief)
 		self.queue_free()
+
+
+func _on_Exit_pressed():
+	get_tree().quit()

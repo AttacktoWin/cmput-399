@@ -78,3 +78,4 @@ text = "Exit"
 [node name="Tween" type="Tween" parent="."]
 
 [connection signal="pressed" from="CanvasLayer/ColorRect/NextGame" to="." method="_on_NextGame_pressed"]
+[connection signal="pressed" from="CanvasLayer/ColorRect/Exit" to="." method="_on_Exit_pressed"]

@@ -36,7 +36,7 @@ func _set_current_page(new_page: int):
 
 func _on_Next_pressed():
 	if (self.current_page == len(self.pages) - 1):
-		State._set_study_id('test')
+		State._set_study_id('tutorial')
 		State.visible = true
 		self.queue_free()
 	else:
